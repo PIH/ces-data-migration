@@ -1,28 +1,22 @@
-library(purrr)
+#' prepare_patients: Converts patient data from Access format to OpenMRS-Iniz
+#'
+#' Imports CSVs from data/input/<site>/Pacientes.csv. Uses that data to produce
+#' a CSV file, data/output/patients.csv, which should be imported by OpenMRS
+#' Initializer module.
+#' 
+#' Deduplicates patients with identical CesID, Nombre, and Apellido. If those
+#' patients have different data, issues a warning. You should use that warning
+#' to add that patient to `R/patient_util.R:ManualDedupe`, which splits these
+#' patient entries instead of merging them. The duplicates handled by
+#' `ManualDedupe` get `-1`, `-2`, etc. appended to their CesID.
+#' 
+#' @docType package
+#' @name prepare_patients
 
-UuidHash <- function(str) {
-  hash <- map(str, digest::sha1)
-  return(
-    paste(
-      substr(hash, 1, 8),
-      substr(hash, 9, 12),
-      substr(hash, 13, 16),
-      substr(hash, 17, 20),
-      substr(hash, 21, 32),
-      sep = "-"
-    )
-  )
-}
+library("tidyverse")
 
-GeneratePtUuid <- function(table) {
-  UuidHash(
-    paste(
-      unlist(table["Nombre"]),
-      unlist(table["Apellido"]),
-      unlist(table["Fechar.de.registro"])
-    )
-  )
-}
+source("R/util.R")
+source("R/patient_util.R")
 
 ParseIdentifier <- function(oldId, location) {
   paste("Old Identification Number", oldId, location, sep = ":")
@@ -39,98 +33,38 @@ ParseGender <- function(g) {
   ifelse(is.na(g), "U", ifelse(g == "1", "F", "M"))
 }
 
-ParseBirthdate <- function(y, m, d) {
-  ifelse((is.na(m) || is.na(d)),
-    ifelse(is.na(y),
-      NA,
-      paste(y, "01-01", sep = "-")
-    ),
-    paste(y, m, d, sep = "-")
-  )
-}
-
 ParseAddresses <- function(addr) {
   paste("cityVillage", addr, sep = ":")
 }
 
-ParseDateCreated <- function(dateString) {
-  dates <- lubridate::parse_date_time(
-    dateString, "%a %b %d %H:%M:%S ... %Y",
-    tz = "CDT"
-  )
-  return(format.Date(dates, "%Y-%m-%dT%H:%M:%SZ"))
-}
+# Main #########################################################################
 
-DenormalizeCommunityNames <- function(patientsPerSite, commsPerSite) {
-  pmap(
-    list(
-      x = patientsPerSite, y = commsPerSite,
-      by.x = "Comunidad", by.y = "ID"
-    ),
-    merge
-  )
-}
+tmp.patients <- Pt.GetCleanedTable()
 
-AppendClinicNames <- function(patientsPerSite, communityPaths) {
-  commNames <- communityPaths   %>%
-    strsplit("/", fixed = TRUE) %>%
-    map(function(p) { p[3] })   %>%
-    unlist()                    %>%
-    {ifelse(. == "Laguna", "Laguna del Cofre", .)} %>%
-    {ifelse(. %in% c("Plan_Alta", "Plan_Baja"), "Plan de la Libertad", .)}
-  setNames(patientsPerSite, commNames)
-  patientsWithClinics <- map2(
-    patientsPerSite,
-    commNames,
-    function(df, commName) {
-      cbind(df, commName)
-    }
-  )
-  return(patientsWithClinics)
-}
-
-# Import data
-communityPaths <- list.dirs("data/input")[-1] # element 1 is "data/input" itself
-input.patientsPerSite <- map(paste0(communityPaths, "/Pacientes.csv"), read.csv)
-input.communitiesPerSite <- map(paste0(communityPaths, "/Comunidades.csv"), read.csv)
-
-# Prep and filter patients table
-tmp.patientsWithComms <- DenormalizeCommunityNames(
-  input.patientsPerSite, input.communitiesPerSite
-)
-tmp.patientsWithClinics <- AppendClinicNames(tmp.patientsWithComms, communityPaths)
-tmp.patientsUnfiltered <- do.call(rbind, tmp.patientsWithClinics)
-tmp.patients <- tmp.patientsUnfiltered[
-  !(tmp.patientsUnfiltered$Nombre == "" & tmp.patientsUnfiltered$Apellido == ""),
-]
-
-# Extract attributes
-birthdateList <- list(
-  tmp.patients["FN_Ano"][, ],
-  tmp.patients["FN_Mes"][, ],
-  tmp.patients["FN_Dia"][, ]
-)
-birthdates <- unlist(pmap(birthdateList, ParseBirthdate))
-createdDates <- ParseDateCreated(unlist(tmp.patients["Fechar.de.registro"]))
+print("Extracting attributes")
 identifiers <- paste(
-  ParseIdentifier(unlist(tmp.patients["CesID"]), unlist(tmp.patients["commName"])),
-  CesIdentifier(1:dim(tmp.patients)[1], unlist(tmp.patients["commName"])),
+  ParseIdentifier(unlist(tmp.patients["CesID"]), tmp.patients[["commName"]]),
+  CesIdentifier(1:dim(tmp.patients)[1], tmp.patients[["commName"]]),
   sep = ";"
 )
 
+print("Constructing output data")
 output.patients <- data.frame(
-  "uuid" = GeneratePtUuid(tmp.patients),
+  "uuid" = Pt.GeneratePtUuid(tmp.patients),
   "Identifiers" = identifiers,
-  "Given names" = unname(tmp.patients["Nombre"]),
-  "Family names" = unname(tmp.patients["Apellido"]),
-  "Gender" = ParseGender(tmp.patients["Sexo"][, ]),
-  "Birthdate" = birthdates,
-  "Date created" = createdDates,
-  "Addresses" = ParseAddresses(tmp.patients["Comunidades"][, ]),
+  "Given names" = tmp.patients[["Nombre"]],
+  "Family names" = tmp.patients[["Apellido"]],
+  "Gender" = ParseGender(tmp.patients[["Sexo"]]),
+  "Birthdate" = tmp.patients[["birthdate"]],
+  "Date created" = tmp.patients[["createdDate"]],
+  "Addresses" = ParseAddresses(tmp.patients[["Comunidades"]]),
   "Void/Retire" = FALSE,
   check.names = FALSE # allow column names to have spaces
 )
 
+print("Writing CSV")
 write.csv(output.patients, "data/output/patients.csv",
   row.names = FALSE, na = ""
 )
+
+print("Done!")

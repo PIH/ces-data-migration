@@ -1,0 +1,5 @@
+CesID,Apellido,Nombre,Edad,Sexo,Comunidad,Historia Clínica,ExpedienteSSA,Acompañante,Fechar de registro,FN_Mes,FN_Dia,FN_Ano,Diabetes,Hipertensión,Asma,Embarazada,Depresión,Epilepsia,Desnutrición,G,P,C,A,FUM,FPP,TD1,TD2,TDRef,Talla,Ataques iniciales,Actualmente embarazada,SPSS,Oportunidades,Migrante,Indígena,Discapacidad,Doctor,AM_Fecha,DEP_Fecha,DM_Fecha,EMB_Fecha,EP_Fecha,HTN_Fecha,DES_Fecha
+112-000351,Cummerbund,Rumblesack,,1,112,,,,,,,,false,true,false,false,false,false,false,,,,,,,,,,,,false,false,false,false,false,false,,,,,,,,
+001-000020,Cuckooclock,Bentobox,,2,112,,,,Tue Oct 14 00:00:00 CDT 2014,10,13,1970,false,false,false,false,false,false,false,,,,,,,,,,,,false,false,false,false,false,false,,,,,,,,
+001-000020,Cuckooclock,Bentobox,,2,112,,,,Tue Oct 14 00:00:00 CDT 2014,,,,false,false,false,false,false,false,false,,,,,,,,,,,,false,true,true,false,false,false,,,,,,,,
+120-000004,Creamsicle,Bumbleshack,,1,120,,,,Tue Oct 14 00:00:00 CDT 2015,2,20,1998,false,false,false,false,false,false,false,,,,,,,,,,,,false,false,false,false,true,false,,,,,,,,Sat Jun 11 00:00:00 CDT 2016
