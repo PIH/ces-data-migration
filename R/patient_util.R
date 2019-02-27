@@ -11,7 +11,7 @@ PT_COLS_LOGICAL <- c("Actualmente.embarazada", "SPSS", "Oportunidades",
                     "Migrante", "Indígena", "Discapacidad", "SUIVE", "Diabetes",
                     "Hipertensión", "Asma")
 
-PT_COLS_CHAR <- c("Fechar.de.registro", "CesID", "Nombre", "Apellido")
+PT_COLS_CHAR <- c("CesID", "Nombre", "Apellido")
 
 vcat <- function(content) {
   if (VERBOSE) {

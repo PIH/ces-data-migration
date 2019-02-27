@@ -1,7 +1,8 @@
-#' prepare_patients: Converts patient data from Access format to OpenMRS-Iniz
+#' prepare_patients
+#' Converts patient data from Access format to OpenMRS-Iniz
 #'
-#' Imports CSVs from data/input/<site>/Pacientes.csv. Uses that data to produce
-#' a CSV file, data/output/patients.csv, which should be imported by OpenMRS
+#' Imports CSVs from `data/input/<site>/Pacientes.csv`. Uses that data to produce
+#' a CSV file, `data/output/patients.csv`, which should be imported by OpenMRS
 #' Initializer module.
 #' 
 #' Deduplicates patients with identical CesID, Nombre, and Apellido. If those
@@ -10,6 +11,9 @@
 #' patient entries instead of merging them. The duplicates handled by
 #' `ManualDedupe` get `-1`, `-2`, etc. appended to their CesID.
 #' 
+#' Splits patients with identical CesID but different name or birthdate. Each
+#' distinct patient is assigned a new CesID with suffix `-1`, `-2`, etc.
+#' 
 #' @docType package
 #' @name prepare_patients
 
@@ -17,6 +21,8 @@ library("tidyverse")
 
 source("R/util.R")
 source("R/patient_util.R")
+
+PT_OUTPUT_PATH = "data/output/patients.csv"
 
 ParseIdentifier <- function(oldId, location) {
   paste("Old Identification Number", oldId, location, sep = ":")
@@ -63,7 +69,7 @@ output.patients <- data.frame(
 )
 
 print("Writing CSV")
-write.csv(output.patients, "data/output/patients.csv",
+write.csv(output.patients, PT_OUTPUT_PATH,
   row.names = FALSE, na = ""
 )
 

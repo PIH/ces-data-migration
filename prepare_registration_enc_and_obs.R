@@ -1,8 +1,9 @@
-#' prepare_registration_enc_and_obs: Prepares registration data for OpenMRS-Iniz
+#' prepare_registration_enc_and_obs
+#' Prepares registration data for OpenMRS-Iniz
 #'
-#' Imports CSVs from data/input/<site>/Pacientes.csv. Uses that data to produce
-#' two CSV files. One contains the registration encounters, one line per
-#' patient. The other contains all the observations, of which there will be 3-5
+#' Imports CSVs from `data/input/<site>/Pacientes.csv`. Uses that data to produce
+#' two CSV files. `ENC_OUTPUT` contains the registration encounters, one line per
+#' patient. `OBS_OUTPUT` contains all the observations, of which there will be 3-5
 #' per patient.
 #' 
 #' These output CSVs should then be imported by OpenMRS Initializer module.

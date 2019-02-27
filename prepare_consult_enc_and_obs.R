@@ -1,8 +1,11 @@
-#' prepare_consult_enc_and_obs: Prepares consult data for OpenMRS-Iniz
+#' prepare_consult_enc_and_obs
+#' Prepares consult data for OpenMRS-Iniz
 #'
-#' Imports CSVs from data/input/<site>/Consultas.csv. Uses that data to produce
-#' two CSV files. One contains the consult encounters, one line per
-#' patient. The other contains all the observations for each of those consults.
+#' Imports CSVs from `data/input/<site>/Consultas.csv`. Uses that data to produce
+#' two CSV files for each encounter type.
+#' 
+#' - `data/output/encounters-*.csv` contains the consult encounters, one line per patient.
+#' - `data/output/obs-*.csv` contains all the observations for each of those consults.
 #' 
 #' These output CSVs should then be imported by OpenMRS Initializer module.
 #' 
