@@ -14,6 +14,8 @@
 #' Splits patients with identical CesID but different name or birthdate. Each
 #' distinct patient is assigned a new CesID with suffix `-1`, `-2`, etc.
 #' 
+#' The logic for this script is almost entirely contained in `R/patient_util.R`.
+#' 
 #' @docType package
 #' @name prepare_patients
 
@@ -24,49 +26,10 @@ source("R/patient_util.R")
 
 PT_OUTPUT_PATH = "data/output/patients.csv"
 
-ParseIdentifier <- function(oldId, location) {
-  paste("Old Identification Number", oldId, location, sep = ":")
-}
-
-CesIdentifier <- function(index, location) {
-  prefix <- stringr::str_to_upper(substr(location, 1, 3))
-  idNum <- 1000000 + index
-  id <- paste0(prefix, idNum)
-  paste("Chiapas EMR ID", id, location, sep = ":")
-}
-
-ParseGender <- function(g) {
-  ifelse(is.na(g), "U", ifelse(g == "1", "F", "M"))
-}
-
-ParseAddresses <- function(addr) {
-  paste("cityVillage", addr, sep = ":")
-}
-
-# Main #########################################################################
-
 tmp.patients <- Pt.GetCleanedTable()
 
-print("Extracting attributes")
-identifiers <- paste(
-  ParseIdentifier(unlist(tmp.patients["CesID"]), tmp.patients[["commName"]]),
-  CesIdentifier(1:dim(tmp.patients)[1], tmp.patients[["commName"]]),
-  sep = ";"
-)
-
-print("Constructing output data")
-output.patients <- data.frame(
-  "uuid" = Pt.GeneratePtUuid(tmp.patients),
-  "Identifiers" = identifiers,
-  "Given names" = tmp.patients[["Nombre"]],
-  "Family names" = tmp.patients[["Apellido"]],
-  "Gender" = ParseGender(tmp.patients[["Sexo"]]),
-  "Birthdate" = tmp.patients[["birthdate"]],
-  "Date created" = tmp.patients[["createdDate"]],
-  "Addresses" = ParseAddresses(tmp.patients[["Comunidades"]]),
-  "Void/Retire" = FALSE,
-  check.names = FALSE # allow column names to have spaces
-)
+print("Preparing output data")
+output.patients <- Pt.PrepareOutputData(tmp.patients)
 
 print("Writing CSV")
 write.csv(output.patients, PT_OUTPUT_PATH,

@@ -18,6 +18,7 @@ source("R/patient_util.R")
 ENC_OUTPUT_PATH = "data/output/encounters_registration.csv"
 OBS_OUTPUT_PATH = "data/output/obs_registration.csv"
 ENCOUNTER_TYPE_NAME = "Enregistrement de patient"
+USE_CLEAN_PT_DATA_CACHE <- TRUE
 
 #' GenerateRegEncounterUuid
 #'
@@ -58,12 +59,11 @@ locations = tmp.patients[["commName"]]
 
 dates = Util.TransformDate(unlist(tmp.patients["Fechar.de.registro"]))
 dates[is.na(dates)] <- "2000-01-01T00:00:00Z"
-ptUuids = Pt.GeneratePtUuid(tmp.patients)
 output.encounters <- data.frame(
   "uuid" = encUuids,
   "Void/Retire" = FALSE,
   "Date" = dates,
-  "Patient UUID" = ptUuids,
+  "Patient UUID" = tmp.patients$ptUuid,
   "Location" = locations,
   "Encounter Type" = ENCOUNTER_TYPE_NAME,
   check.names = FALSE # allow column names to have spaces
@@ -106,7 +106,7 @@ for (type in c("indig", "migrant", "disc")) {
   dataForType <- data.frame(
     "uuid" = obsUuids,
     "Void/Retire" = FALSE,
-    "Person UUID" = ptUuids,
+    "Person UUID" = tmp.patients$ptUuid,
     "Location" = locations,
     "Encounter UUID" = encUuids,
     "Concept" = unname(tmp.obsConcepts[type]),
@@ -123,7 +123,7 @@ for (type in c("prospera", "sp")) {
   dataForType <- data.frame(
     "uuid" = obsUuids,
     "Void/Retire" = FALSE,
-    "Person UUID" = ptUuids,
+    "Person UUID" = tmp.patients$ptUuid,
     "Location" = locations,
     "Encounter UUID" = encUuids,
     "Concept" = tmp.obsStructs[[type]][1],

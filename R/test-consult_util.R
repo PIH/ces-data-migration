@@ -11,7 +11,7 @@ Util.CommunityPaths <- function() {
   list.dirs("data/test")[-1] # element 1 is "data/test" itself
 }
 
-TestConsults <- function() {
+PreppedTestConsults <- function() {
   rawConsults <- Con.GetConsults()
   patients <- Pt.GetCleanedTable()
   consults <- Con.PrepareGeneralConsultData(rawConsults, patients)
@@ -29,9 +29,15 @@ test_that("GetConsults appends community name", {
 })
 
 test_that("PrepareVitalsData returns acceptable data", {
-  consults <- TestConsults()
+  consults <- PreppedTestConsults()
   output <- Con.PrepareVitalsData(consults)
   expect_equal(sort(names(output)), c("encounters", "obs"))
   expect_true(all(!is.na(output$encounters$Date)))
-  View(output$encounters)
+})
+
+test_that("Vitals UUIDs all match up with an entry from patients", {
+  patients <- Pt.GetCleanedTable()
+  consults <- PreppedTestConsults()
+  output <- Con.PrepareVitalsData(consults)
+  expect_true(all(output$encounters$`Patient UUID` %in% patients$ptUuid))
 })

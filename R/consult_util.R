@@ -88,11 +88,9 @@ Con.PrepareGeneralConsultData <- function(consults, patients) {
   consults <- inner_join(consults, patients,
                          by = c("CESid" = "CesID"),
                          suffix = c(".con", ".pt"))
-  ptUuids = Pt.GeneratePtUuid(consults)
   consultDate <- Util.TransformDate(consults$Fecha)  # `Hora de atención` has no valid data
   consults <- bind_cols(consults,
-                        consultDate = consultDate,
-                        ptUuid = ptUuids)
+                        consultDate = consultDate)
   return(consults)
 }
 
@@ -162,28 +160,3 @@ Con.PrepareVitalsData <- function(consults) {
 Con.PrepareConsultObsData <- function(consults) {
   
 }
-
-Con.AssembleOutputData <- function(consults) {
-  
-  encounters <- tibble(
-    "uuid" = consults$encUuid,
-    "Void/Retire" = FALSE,
-    "Date" = consults$consultDate,
-    "Patient UUID" = consults$ptUuid,
-    "Location" = consults$commName,
-    "Encounter Type" = VITALS_ENCOUNTER_TYPE
-  )
-  
-  obs <- tibble(
-    "uuid" = obsUuids,
-    "Void/Retire" = FALSE,
-    "Person UUID" = ptUuids,
-    "Location" = locations,
-    "Encounter UUID" = encUuids,
-    "Concept" = tmp.obsStructs[[type]][1],
-    "Value" = NA,
-    "Set Members" = tmp.obsStructs[[type]][[2]],
-    "Set Member Values" = tmp.obsValues[[type]],
-  )
-}
-

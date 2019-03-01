@@ -4,6 +4,7 @@ packrat/src/
 data/input/*
 data/tmp/*
 data/output/*
+data/test/patient-cache.csv
 
 .~lock*
 

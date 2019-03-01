@@ -38,4 +38,5 @@ print("Prepping vitals data")
 vitalsRes <- Con.PrepareVitalsData(consults)
 WriteResults(vitalsRes, "vitals")
 
+
 print("Done!")

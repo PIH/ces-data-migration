@@ -37,6 +37,40 @@ Pt._Unfactorize <- function(patients) {
   return(patients)
 }
 
+Pt._FixDatatypes <- function(patients) {
+  for (col in PT_COLS_LOGICAL) {
+    patients[[col]] <- Util.ConvertTextToBoolVector(patients[[col]])
+  }
+  return(patients)
+}
+
+Pt._FixInvalidData <- function(patients) {
+  patients$Nombre[patients$Nombre == ""] <- "-"
+  patients$Apellido[patients$Apellido == ""] <- "-"
+  return(patients)
+}
+
+Pt._FilterUnsalvagableData <- function(patients) {
+  patients <- patients[
+    !(patients$Nombre == "" & patients$Apellido == ""),
+  ]
+  return(patients)
+}
+
+#' GeneratePtUuid
+#'
+#' Constructs patient UUIDs from CesID. This implicitly requires that each
+#' patient has a unique CesID. CesIDs should therefore be cleaned and
+#' deduplicated before UUIDs are calculated.
+#'
+#' @param The whole patients dataframe
+#'
+#' @return A UUID string with dashes
+#'
+Pt._GeneratePtUuid <- function(table) {
+  Util.UuidHash(table$CesID)
+}
+
 #' DenormalizeCommunityNames
 #'
 #' @param patientsPerSite a data.frame of per-community data.frames
@@ -84,24 +118,23 @@ Pt._ParseAndFixBirthdates <- function(patients) {
   return(patients)
 }
 
-Pt._FixInvalidData <- function(patients) {
-  patients$Nombre[patients$Nombre == ""] <- "-"
-  patients$Apellido[patients$Apellido == ""] <- "-"
-  return(patients)
+Pt._ParseIdentifier <- function(oldId, location) {
+  paste("Old Identification Number", oldId, location, sep = ":")
 }
 
-Pt._FilterUnsalvagableData <- function(patients) {
-  patients <- patients[
-    !(patients$Nombre == "" & patients$Apellido == ""),
-  ]
-  return(patients)
+Pt._CesIdentifier <- function(index, location) {
+  prefix <- stringr::str_to_upper(substr(location, 1, 3))
+  idNum <- 1000000 + index
+  id <- paste0(prefix, idNum)
+  paste("Chiapas EMR ID", id, location, sep = ":")
 }
 
-Pt._FixDatatypes <- function(patients) {
-  for (col in PT_COLS_LOGICAL) {
-    patients[[col]] <- Util.ConvertTextToBoolVector(patients[[col]])
-  }
-  return(patients)
+Pt._ParseGender <- function(g) {
+  ifelse(is.na(g), "U", ifelse(g == "1", "F", "M"))
+}
+
+Pt._ParseAddresses <- function(addr) {
+  paste("cityVillage", addr, sep = ":")
 }
 
 Pt._CreateDistinctPatients <- function(patients,
@@ -296,6 +329,8 @@ Pt.CleanTable <- function(input) {
   patients %<>% Pt._FilterUnsalvagableData()
   vprint("..FixDatatypes")
   patients %<>% Pt._FixDatatypes()
+  vprint("..Appending UUIDs")
+  patients <- add_column(patients, ptUuid = Pt._GeneratePtUuid(patients))
   vprint("CleanTable done")
   return(patients)
 }
@@ -336,22 +371,22 @@ Pt.GetCleanedTable <- function(useCache = NA) {
   return(outputData)
 }
 
-#' GeneratePtUuid
-#'
-#' Constructs patient UUIDs from first name, last name, and registration date.
-#' Duplicate UUIDs will therefore be produced for patients for whom all three
-#' of those fields are identical.
-#'
-#' @param The whole patients dataframe
-#'
-#' @return A UUID string with dashes
-#'
-Pt.GeneratePtUuid <- function(table) {
-  Util.UuidHash(
-    paste(
-      table[["Nombre"]],
-      table[["Apellido"]],
-      table[["Fechar.de.registro"]]
-    )
+Pt.PrepareOutputData <- function(cleanPtData) {
+  identifiers <- paste(
+    Pt._ParseIdentifier(cleanPtData[["CesID"]], cleanPtData[["commName"]]),
+    Pt._CesIdentifier(1:nrow(cleanPtData), cleanPtData[["commName"]]),
+    sep = ";"
   )
+  
+  return(tibble(
+    "uuid" = cleanPtData[["ptUuid"]],
+    "Identifiers" = identifiers,
+    "Given names" = cleanPtData[["Nombre"]],
+    "Family names" = cleanPtData[["Apellido"]],
+    "Gender" = Pt._ParseGender(cleanPtData[["Sexo"]]),
+    "Birthdate" = cleanPtData[["birthdate"]],
+    "Date created" = cleanPtData[["createdDate"]],
+    "Addresses" = Pt._ParseAddresses(cleanPtData[["Comunidades"]]),
+    "Void/Retire" = FALSE
+  ))
 }
