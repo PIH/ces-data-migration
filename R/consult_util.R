@@ -42,10 +42,10 @@ CONSULT_FORM_SPEC <- tribble(
   "Nota", "CIEL:1390", id,  # concept "presenting history"
   # asthma
   "Síntomas NocturnosSI", "PIH:FUNCTIONAL REVIEW OF SYMPTOMS CONSTRUCT", codedYes,
-  "Limitación de la ActividadSI", "PIH:Limitation of ability to perform main daily activities coded", codedYes,
-  "Medicamento de rescateSI", "PIH:Medications more that twice per week", codedYes,
   "Síntomas NocturnosNO", "PIH:FUNCTIONAL REVIEW OF SYMPTOMS CONSTRUCT", codedNo,
+  "Limitación de la ActividadSI", "PIH:Limitation of ability to perform main daily activities coded", codedYes,
   "Limitación de la ActividadNO", "PIH:Limitation of ability to perform main daily activities coded", codedNo,
+  "Medicamento de rescateSI", "PIH:Medications more that twice per week", codedYes,
   "Medicamento de rescateNO", "PIH:Medications more that twice per week", codedNo,
   # diabetes
   "Glucosa", "PIH:SERUM GLUCOSE", id,
