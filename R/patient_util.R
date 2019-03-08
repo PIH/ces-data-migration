@@ -207,9 +207,7 @@ Pt._Deduplicate <- function(patients) {
   # create column of info on which to dedupe
   patients <- dplyr::bind_cols(patients,
       idAndNames = paste(patients$CesID, patients$Nombre, patients$Apellido))
-  # find duplicates and split into groups
-  dupes <- patients[Util.AllDuplicated(patients$idAndNames), ]
-  dupeGroups <- split(dupes, dupes$idAndNames)
+  dupeGroups <- Util.GetDupeGroups(patients, "idAndNames")
   
   # CollapseDupeGroup: collapses groups into individual entries
   CollapseDupeGroup <- function(group) {

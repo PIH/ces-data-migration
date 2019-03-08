@@ -56,6 +56,21 @@ Util.CsvToTibble <- function(path) {
   as_tibble(read.csv(path))
 }
 
+#' GetDupeGroups
+#'
+#' @param table (tbl)
+#' @param key (str) the name of the column on which to identify duplicates
+#'   i.e., all rows of `table` with the same value for `table[[key]]` will
+#'   be grouped together
+#'
+#' @return list[table] where each list item is a table indexed by a unique
+#'   `table[[key]]`, which is shared between all the rows in that table
+Util.GetDupeGroups <- function(table, key) {
+  dupes <- table[Util.AllDuplicated(table[[key]]), ]
+  dupeGroups <- split(dupes, dupes[[key]])
+  return(dupeGroups)
+}
+
 Util.ParseAccessDate <- function(dateString) {
   lubridate::parse_date_time(
     dateString, "%a %b %d %H:%M:%S ... %Y"

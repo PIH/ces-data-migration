@@ -15,8 +15,8 @@ library("tidyverse")
 source("R/util.R")
 source("R/patient_util.R")
 
-ENC_OUTPUT_PATH = "data/output/encounters_registration.csv"
-OBS_OUTPUT_PATH = "data/output/obs_registration.csv"
+ENC_OUTPUT_PATH = "data/output/encounters-registration.csv"
+OBS_OUTPUT_PATH = "data/output/obs-registration.csv"
 ENCOUNTER_TYPE_NAME = "Enregistrement de patient"
 USE_CLEAN_PT_DATA_CACHE <- TRUE
 

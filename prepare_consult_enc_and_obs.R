@@ -18,18 +18,19 @@ source("R/patient_util.R")
 source("R/consult_util.R")
 
 BASE_OUTPUT_PATH = "data/output/"
+USE_CLEAN_PT_DATA_CACHE <- TRUE
 
 WriteResults <- function(res, name) {
   encOutputPath <- paste(BASE_OUTPUT_PATH, "encounters-", name, ".csv", sep = "")
   print(paste("Writing encounters CSV to", encOutputPath))
-  write_csv(res$encounters, encOutputPath)
+  write_csv(res$encounters, encOutputPath, na = "")
   
   obsOutputPath <- paste(BASE_OUTPUT_PATH, "obs-", name, ".csv", sep = "")
   print(paste("Writing obs CSV to", obsOutputPath))
-  write_csv(res$obs, obsOutputPath)
+  write_csv(res$obs, obsOutputPath, na = "")
 }
 
-patients <- Pt.GetCleanedTable(useCache = TRUE)
+patients <- Pt.GetCleanedTable()
 print("Getting consult data")
 rawConsults <- Con.GetConsults()
 print("Doing general consult data prep")
@@ -37,6 +38,9 @@ consults <- Con.PrepareGeneralConsultData(rawConsults, patients)
 print("Prepping vitals data")
 vitalsRes <- Con.PrepareVitalsData(consults)
 WriteResults(vitalsRes, "vitals")
+print("Prepping consults data")
+consultFormRes <- Con.PrepareConsultFormData(consults)
+WriteResults(consultFormRes, "consults")
 
 
 print("Done!")

@@ -29,6 +29,22 @@ test_that("CsvToTibble generates a tibble with the right dimensions", {
   expect_equal(nrow(output), 10)
 })
 
+test_that("GetDupeGroups produces a list with grouped rows", {
+  testData <- tribble(
+    ~"name", ~"age", ~"keyCol",
+    "foo",   21,     "fooKey",
+    "bar",   20,     "barKey",
+    "baz",   25,     "fooKey",
+    "bar",   22,     "barKey",
+    "qux",   23,     "quxKey"
+  )
+  output <- Util.GetDupeGroups(testData, "keyCol")
+  expect_equal(length(output), 2)
+  expect_equal(sort(names(output)), c("barKey", "fooKey"))
+  expect_equal(nrow(output[[1]]), 2)
+  expect_equal(nrow(output[[2]]), 2)
+})
+
 test_that("TransformDate parses dates, but messes up time zones", {
   accessDates <- c("Fri Apr 17 00:00:00 CDT 2015",
                    "Mon Oct 20 00:00:00 ABC 2014")
