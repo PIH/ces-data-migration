@@ -9,9 +9,12 @@ USE_CLEAN_PT_DATA_CACHE <- FALSE
   
 PT_COLS_LOGICAL <- c("Actualmente.embarazada", "SPSS", "Oportunidades",
                     "Migrante", "Indígena", "Discapacidad", "SUIVE", "Diabetes",
-                    "Hipertensión", "Asma")
+                    "Hipertensión", "Asma", "Embarazada", "Depresión",
+                    "Epilepsia", "Desnutrición")
 
-PT_COLS_CHAR <- c("CesID", "Nombre", "Apellido")
+PT_COLS_CHAR <- c("CesID", "Nombre", "Apellido", "AM_Fecha", "DEP_Fecha",
+                  "DM_Fecha", "EMB_Fecha", "EP_Fecha", "HTN_Fecha",
+                  "DES_Fecha")
 
 vcat <- function(content) {
   if (VERBOSE) {
@@ -214,36 +217,36 @@ Pt._Deduplicate <- function(patients) {
     intCols <- c("FN_Ano", "FN_Mes", "FN_Dia")
     res <- group[1, ]
     # take non-NA entries from int cols
-    for (c in intCols) {
-      goodItem <- group[[c]][which(!is.na(group[[c]]))]
+    for (col in intCols) {
+      goodItem <- unique(group[[col]][which(!is.na(group[[col]]))])
       if (length(goodItem) == 1) {
-        res[[c]] <- goodItem
+        res[[col]] <- goodItem
       }
       if (length(goodItem) > 1) {
-        res[[c]] <- goodItem[[1]]
-        print(paste("WARNING: multiple values for", c, "for person", res$idAndNames, ": ", paste(goodItem, collapse = " "),
+        res[[col]] <- goodItem[[1]]
+        print(paste("WARNING: multiple values for", col, "for person", res$idAndNames, ": ", paste(goodItem, collapse = " "),
             "    Patient exists in ", paste(group$commName, collapse = " "),
             "    Consider handling the patient in ManualDedupe(...)"))
       }
     }
     # prefer non-empty strings
-    for (c in PT_COLS_CHAR) {
-      goodItem <- group[[c]][which(!is.na(group[[c]]) && group[[c]] != "")]
+    for (col in PT_COLS_CHAR) {
+      goodItem <- unique(group[[col]][which(group[[col]] != "")])
       if (length(goodItem) == 1) {
-        res[[c]] <- goodItem
+        res[[col]] <- goodItem
       }
       if (length(goodItem) > 1) {
-        res[[c]] <- goodItem[[1]]
-        print(paste("WARNING: multiple values for", c, "for person", res$idAndNames, ": ", paste(goodItem, collapse = " "),
+        res[[col]] <- goodItem[[1]]
+        print(paste("WARNING: multiple values for", col, "for person", res$idAndNames, ": ", paste(goodItem, collapse = " "),
             "    Patient exists in ", paste(group$commName, collapse = " "),
             "    Consider handling the patient in ManualDedupe(...)"))
       }
     }
     # prefer false positives to false negatives
-    for (c in PT_COLS_LOGICAL) {
-      trueRows <- group[[c]][which(!is.na(group[[c]]) && group[[c]] != FALSE)]
+    for (col in PT_COLS_LOGICAL) {
+      trueRows <- group[[col]][which(group[[col]])]
       if (length(trueRows) > 0) {
-        res[[c]] <- TRUE
+        res[[col]] <- TRUE
       }
     }
     return(res)

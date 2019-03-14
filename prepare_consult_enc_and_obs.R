@@ -7,6 +7,9 @@
 #' - `data/output/encounters-*.csv` contains the consult encounters, one line per patient.
 #' - `data/output/obs-*.csv` contains all the observations for each of those consults.
 #' 
+#' Data in Access that has no counterpart in OpenMRS is appended to the
+#' consult note (which is coded as "Presenting history").
+#' 
 #' These output CSVs should then be imported by OpenMRS Initializer module.
 #' 
 #' @docType package

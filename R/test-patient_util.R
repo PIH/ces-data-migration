@@ -59,7 +59,11 @@ test_that("Deduplicate takes care of Rumblesack Cummerbund", {
   output <- Pt._Deduplicate(TestPatients())
   rumblesacks <- output[startsWith(output$CesID, "112-000351"), ]
   expect_equal(nrow(rumblesacks), 1)
+  # Birthday comes from Salvidor
   expect_equal(rumblesacks[[1, "FN_Ano"]], 2011)
+  # HTN data should be pulled from Soledad
+  expect_true(rumblesacks[[1, "Hipertensión"]])
+  expect_equal(rumblesacks[[1, "HTN_Fecha"]], "Fri May 19 00:00:00 CDT 2017")
 })
 
 test_that("Repeated CesIDs with different data get split", {

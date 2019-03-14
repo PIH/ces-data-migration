@@ -1,0 +1,84 @@
+library("tidyverse")
+source("R/util.R")
+
+PROGRAM_SPEC <- tribble(
+  ~"accessCol",   ~"programName", ~"dateCol",
+  "Diabetes",     "Diabetes",     "DM_Fecha",
+  "Hipertensión", "Hypertension", "HTN_Fecha"
+)
+
+#' GeneratePeUuid
+#'
+#' @param programEntries (tbl) patient data with accessCol column and
+#'   one line per program enrollment
+#'
+#' @return
+PE._GeneratePeUuid <- function(programEntries) {
+  Util.UuidHash(
+    paste(
+      programEntries$CesID,
+      programEntries$accessCol
+    )
+  )
+}
+
+#' PrepareProgramEnrollments
+#'
+#' @param patients : the prepped patient data from Pt.GetCleanedTable()
+#'
+#' @return (tbl) enrollments in the format expected by Iniz
+#' @export
+PE.PrepareProgramEnrollments <- function(patients) {
+  patientsInAnyProgram <- patients[
+    Util.AnyEntryTrue(
+      patients,
+      PROGRAM_SPEC[[1]]
+    ),
+  ]
+  
+  # create tbl with one row per program entry
+  programEntriesUnfiltered <- patientsInAnyProgram %>%
+    gather(
+      key = "accessCol", value = "accessVal",
+      PROGRAM_SPEC[[1]]
+    )
+  
+  # Add date
+  programEntriesUnfilteredDates <- patientsInAnyProgram %>%
+    gather(
+      key = "dateColName", value = "rawEnrollDate",
+      PROGRAM_SPEC[[3]]
+    )
+  
+  programEntriesUnfiltered <- bind_cols(
+    programEntriesUnfiltered,
+    programEntriesUnfilteredDates["rawEnrollDate"]
+  )
+  
+  programEntriesUnfiltered <- mutate(
+    programEntriesUnfiltered,
+    enrollDate = Util.TransformDate(rawEnrollDate)
+  )
+  
+  programEntries <- programEntriesUnfiltered[programEntriesUnfiltered$accessVal, ]
+  
+  # Add peUuid
+  peUuid <- PE._GeneratePeUuid(programEntries)
+  programEntries <- add_column(programEntries, peUuid = peUuid)
+
+  # Add entries for program name & date column name
+  programEntries <- inner_join(programEntries, PROGRAM_SPEC, by = "accessCol")
+  
+  pe <- tibble(
+    "uuid" = programEntries$peUuid,
+    "Void/Retire" = FALSE,
+    "Person UUID" = programEntries$ptUuid,
+    "Location" = programEntries$commName,
+    "Program Name" = programEntries$programName,
+    "Date Enrolled" = programEntries$enrollDate,
+    "Date Completed" = NA,
+    "Outcome Concept" = NA
+  )
+
+  return(pe)
+}

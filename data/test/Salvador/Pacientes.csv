@@ -1,11 +1,11 @@
 CesID,Apellido,Nombre,Edad,Sexo,Comunidad,Historia Clínica,ExpedienteSSA,Acompañante,Fechar de registro,FN_Mes,FN_Dia,FN_Ano,Diabetes,Hipertensión,Asma,Embarazada,Depresión,Epilepsia,Desnutrición,G,P,C,A,FUM,FPP,TD1,TD2,TDRef,Talla,Ataques iniciales,Actualmente embarazada,SPSS,Oportunidades,Migrante,Indígena,Discapacidad,Doctor,AM_Fecha,DEP_Fecha,DM_Fecha,EMB_Fecha,EP_Fecha,HTN_Fecha,DES_Fecha
-112-000351,Cummerbund,Rumblesack,,1,112,,,,Mon Oct 13 00:00:00 CDT 2014,4,10,2011,false,false,false,false,false,false,false,,,,,,,,,,,,false,false,false,false,false,false,,,,,,,,
+112-000351,Cummerbund,Rumblesack,,1,112,,,,Mon Oct 13 00:00:00 CDT 2014,4,10,2011,false,false,false,false,false,true,false,,,,,,,,,,,,false,false,false,false,false,false,,,,,,Fri May 19 00:00:00 CDT 2017,,
 112-000352,,Broccoli,,2,112,,,,Tue Oct 14 00:00:00 CDT 2014,6,12,1999,false,false,false,false,false,false,false,,,,,,,,,,,,false,false,false,false,false,false,,,,,,,,
-112-000353,Crimpysnitch,,,2,112,,,,Tue Oct 14 00:00:00 CDT 2014,10,5,1980,false,false,false,false,false,false,false,,,,,,,,,,,,false,true,true,false,false,false,,,,,,,,
-001-000020,Cuckooclock,Bentobox,,,115,,,,,1,1,1995,false,false,false,false,false,false,false,,,,,,,,,,,,false,true,false,false,false,false,,,Wed Jun 28 00:00:00 CDT 2017,,,,,
+112-000353,HasDMbutNoDate,,,2,112,,,,Tue Oct 14 00:00:00 CDT 2014,10,5,1980,true,false,false,false,false,false,false,,,,,,,,,,,,false,true,true,false,false,false,,,,,,,,
+001-000020,Depression,Bentobox,,,115,,,,,1,1,1995,false,false,false,false,true,false,false,,,,,,,,,,,,false,true,false,false,false,false,,,Wed Jun 28 00:00:00 CDT 2017,,,,,
 115-000084,Curdlemilk,Butterfree,,1,115,,,0,Sat Jul 21 00:00:00 CDT 2018,,5,1959,false,false,false,false,false,false,false,,,,,,,,,,,,false,true,true,false,false,false,,,,,,,,
-120-000001,Clavichord,Muffintop,,2,120,,,,Fri Jun 10 00:00:00 CDT 2016,,,,false,false,true,false,false,false,false,,,,,,,,,,,,false,true,false,false,false,false,,Fri Jun 10 00:00:00 CDT 2016,,,,,,
+120-000001,Asma,Muffintop,,2,120,,,,Fri Jun 10 00:00:00 CDT 2016,,,,false,false,true,false,false,false,false,,,,,,,,,,,,false,true,false,false,false,false,,Fri Jun 10 00:00:00 CDT 2016,,,,,,
 120-000002,Moldyspore,Buffalo,,1,120,,,,Sat Jun 11 00:00:00 CDT 2016,12,1,2208,false,false,false,false,false,false,false,,,,,,,,,,,,false,false,false,false,true,false,,,,,,,,
-120-000003,Creamsicle,Bandersnatch,,1,120,,,,Sat Jun 11 00:00:00 CDT 2016,6,25,190,false,false,false,true,false,false,false,,,,,,,,,,,,false,false,false,false,true,false,,,,,Fri May 19 00:00:00 CDT 2017,,,
-120-000004,Colonist,Bouillabaisse,,1,120,,,,Sat Jun 11 00:00:00 CDT 2016,5,12,2010,false,false,false,false,false,false,true,,,,,,,,,,,,false,false,false,false,true,false,,,,,,,,Sat Jun 11 00:00:00 CDT 2016
+120-000003,Pregnant,Bandersnatch,,1,120,,,,Sat Jun 11 00:00:00 CDT 2016,6,25,190,false,false,false,true,false,false,false,,,,,,,,,,,,false,false,false,false,true,false,,,,,Fri May 19 00:00:00 CDT 2017,,,
+120-000004,Malnourished,Bouillabaisse,,1,120,,,,Sat Jun 11 00:00:00 CDT 2016,5,12,2010,false,false,false,false,false,false,true,,,,,,,,,,,,false,false,false,false,true,false,,,,,,,,Sat Jun 11 00:00:00 CDT 2016
 120-000005,,,,2,120,,,,Tue Oct 14 00:00:00 CDT 2014,10,1,1990,false,false,false,false,false,false,false,,,,,,,,,,,,false,true,true,false,false,false,,,,,,,,

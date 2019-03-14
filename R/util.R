@@ -4,6 +4,16 @@ Util.AllDuplicated <- function(vec) {
   duplicated(vec) | duplicated(vec, fromLast = TRUE)
 }
 
+#' AnyEntryTrue
+#'
+#' @param data (tbl)
+#' @param colNames (c[str]) vector of column names
+#'
+#' @return c(lgl) along rows of data, whether or not any entry is TRUE
+Util.AnyEntryTrue <- function(data, colNames) {
+  return(Util.IsTrue(apply(data[colNames], 1, any)))
+}
+
 #' AnyEntryNotNa
 #'
 #' @param data (tbl)
@@ -69,6 +79,17 @@ Util.GetDupeGroups <- function(table, key) {
   dupes <- table[Util.AllDuplicated(table[[key]]), ]
   dupeGroups <- split(dupes, dupes[[key]])
   return(dupeGroups)
+}
+
+#' IsTrue
+#' 
+#' I can't believe this function needs to exist, but it does
+#'
+#' @example
+#' foo <- c(TRUE, FALSE, NA)
+#' foo[Util.IsTrue(foo)]
+Util.IsTrue <- function(x) {
+  !is.na(x) & x
 }
 
 Util.ParseAccessDate <- function(dateString) {

@@ -1,6 +1,17 @@
 library("testthat")
 source("R/util.R")
 
+test_that("AnyEntryTrue selects the correct rows", {
+  input <- tibble(
+    foo = c(FALSE, TRUE,  NA),
+    bar = c(TRUE,  FALSE, FALSE),
+    baz = c(TRUE,  NA,    TRUE)
+  )
+  
+  output <- Util.AnyEntryTrue(input, c("foo", "bar"))
+  expect_equal(output, c(TRUE, TRUE, FALSE), info = output)
+})
+
 test_that("AnyEntryNotNa selects the correct rows", {
   input <- tibble(
     foo = c(1, 2, NA),
