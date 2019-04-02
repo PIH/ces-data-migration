@@ -43,7 +43,13 @@ two CSV files for each encounter type.
 - `data/output/encounters-*.csv` contains the consult encounters, one line per patient.
 - `data/output/obs-*.csv` contains all the observations for each of those consults.
 
+Data in Access that has no counterpart in OpenMRS is appended to the
+consult note (which is coded as "Presenting history").
+
 These output CSVs should then be imported by OpenMRS Initializer module.
+
+
+- `BASE_OUTPUT_PATH = "data/output/"`
 
 ### prepare_patients.R
 Converts patient data from Access format to OpenMRS-Iniz
@@ -61,8 +67,25 @@ patient entries instead of merging them. The duplicates handled by
 Splits patients with identical CesID but different name or birthdate. Each
 distinct patient is assigned a new CesID with suffix `-1`, `-2`, etc.
 
+The logic for this script is almost entirely contained in `R/patient_util.R`.
+
 
 - `PT_OUTPUT_PATH = "data/output/patients.csv"`
+
+### prepare_program_enrollments.R
+Prepares patient-program data for OpenMRS-Iniz
+
+Imports CSVs from `data/input/<site>/Pacientes.csv`, unless preproccessed
+Patient data is available at `data/tmp/prepped-patients.csv`.
+Uses that data to produce a CSV file at `ENROLLMENTS_OUTPUT_PATH`.
+
+Data in Access that has no counterpart in OpenMRS is appended to the
+consult note (which is coded as "Presenting history").
+
+These output CSVs should then be imported by OpenMRS Initializer module.
+
+
+- `ENROLLMENTS_OUTPUT_PATH = "data/output/program_enrollments.csv"`
 
 ### prepare_registration_enc_and_obs.R
 Prepares registration data for OpenMRS-Iniz
@@ -75,6 +98,6 @@ per patient.
 These output CSVs should then be imported by OpenMRS Initializer module.
 
 
-- `ENC_OUTPUT_PATH = "data/output/encounters_registration.csv"`
-- `OBS_OUTPUT_PATH = "data/output/obs_registration.csv"`
+- `ENC_OUTPUT_PATH = "data/output/encounters-registration.csv"`
+- `OBS_OUTPUT_PATH = "data/output/obs-registration.csv"`
 
