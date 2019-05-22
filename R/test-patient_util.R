@@ -23,6 +23,21 @@ TestPatients <- function() {
   return(patients)
 }
 
+test_that("ParseIdentifier produces old ID", {
+  output <- Pt._ParseIdentifier(c("12345", "23456"), c("a", "b"))
+  expect_equal(length(output), 2)
+  expect_equal(output[[1]], "Old Identification Number:12345:a")
+  expect_equal(output[[2]], "Old Identification Number:23456:b")
+})
+
+test_that("ParseIdentifier doesn't produce blank identifiers", {
+  output <- Pt._ParseIdentifier(c("12345", NA), c("a", "b"))
+  expect_equal(length(output), 2)
+  expect_equal(output[[1]], "Old Identification Number:12345:a")
+  expect_equal(output[[2]], "")
+})
+
+
 test_that("ParseAndFixBirthdates attaches birthday columns", {
   output <- Pt._ParseAndFixBirthdates(TestPatients())
   expect_equal(output[[1, "birthdate"]], "2011-4-10")
@@ -42,7 +57,8 @@ test_that("ParseAndFixBirthdates fixes nonsense birthdays", {
 })
 
 test_that("FilterUnsalvagableData removes no-name row", {
-  output <- Pt._FilterUnsalvagableData(TestPatients())
+  fixed <- Pt._FixInvalidData(TestPatients())
+  output <- Pt._FilterUnsalvagableData(fixed)
   naRow <- output[output$CesID == "120-000005", ]
   expect_equal(nrow(naRow), 0)
 })
