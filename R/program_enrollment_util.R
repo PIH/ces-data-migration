@@ -2,9 +2,14 @@ library("tidyverse")
 source("R/util.R")
 
 PROGRAM_SPEC <- tribble(
-  ~"accessCol",   ~"programName", ~"dateCol",
-  "Diabetes",     "Diabetes",     "DM_Fecha",
-  "Hipertensión", "Hypertension", "HTN_Fecha"
+  ~"accessCol",   ~"programName",  ~"dateCol",
+  "Asma",         "Asthma",        "AM_Fecha",
+  "Depresión",    "Mental Health", "DEP_Fecha",
+  "Desnutrición", "Malnutrition",  "DES_Fecha",
+  "Diabetes",     "Diabetes",      "DM_Fecha",
+  "Embarazada",   "ANC",           "EMB_Fecha",
+  "Epilepsia",    "Epilepsy",      "EP_Fecha",
+  "Hipertensión", "Hypertension",  "HTN_Fecha"
 )
 
 #' GeneratePeUuid

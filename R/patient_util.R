@@ -47,15 +47,17 @@ Pt._FixDatatypes <- function(patients) {
   return(patients)
 }
 
+# Replaces blank names with "-"
 Pt._FixInvalidData <- function(patients) {
   patients$Nombre[patients$Nombre == ""] <- "-"
   patients$Apellido[patients$Apellido == ""] <- "-"
   return(patients)
 }
 
+# Expects that blank names have been replaced by "-"
 Pt._FilterUnsalvagableData <- function(patients) {
   patients <- patients[
-    !(patients$Nombre == "" & patients$Apellido == ""),
+    !(patients$Nombre == "-" & patients$Apellido == "-"),
   ]
   return(patients)
 }
@@ -122,7 +124,9 @@ Pt._ParseAndFixBirthdates <- function(patients) {
 }
 
 Pt._ParseIdentifier <- function(oldId, location) {
-  paste("Old Identification Number", oldId, location, sep = ":")
+  ifelse(!is.na(oldId) & oldId != "",
+         paste("Old Identification Number", oldId, location, sep = ":"),
+         "")
 }
 
 Pt._CesIdentifier <- function(index, location) {
@@ -182,7 +186,80 @@ Pt._ManualDedupe <- function(patients) {
     "047-000010", 
     "100-000001", 
     "139-000001", 
-    "142-000002")
+    "142-000002",
+    "001-000001",
+    "001-000011",
+    "001-000012",
+    "001-000016",
+    "001-000023",
+    "001-000025",
+    "001-000028",
+    "001-000030",
+    "001-000036",
+    "001-000037",
+    "002-000016",
+    "002-000022",
+    "002-000023",
+    "002-000030",
+    "002-000041",
+    "007-000013",
+    "011-000003",
+    "011-000008",
+    "011-000024",
+    "011-000027",
+    "012-000001",
+    "012-000003",
+    "016-000002",
+    "017-000002",
+    "017-000005",
+    "025-000003",
+    "025-000007",
+    "025-000014",
+    "025-000018",
+    "025-000021",
+    "025-000026",
+    "025-000032",
+    "025-000038",
+    "025-000047",
+    "025-000053",
+    "025-000055",
+    "025-000057",
+    "030-000004",
+    "030-000006",
+    "051-000003",
+    "055-000001",
+    "059-000008",
+    "063-000001",
+    "064-000002",
+    "066-000002",
+    "067-000001",
+    "070-000001",
+    "072-000001",
+    "077-000006",
+    "077-000016",
+    "077-000018",
+    "077-000020",
+    "077-000021",
+    "077-000023",
+    "079-000005",
+    "084-000002",
+    "086-000001",
+    "087-000006",
+    "087-000018",
+    "087-000027",
+    "087-000030",
+    "087-000034",
+    "087-000037",
+    "087-000049",
+    "087-000050",
+    "088-000029",
+    "088-000031",
+    "092-000025",
+    "092-000025",
+    "092-000043",
+    "092-000047",
+    "092-000048",
+    "100-000002")
   
   patients <- reduce(badIds,
                      Pt._CreateDistinctPatients,
