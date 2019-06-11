@@ -16,12 +16,12 @@ source("R/util.R")
 #   1. The Access column header
 #   2. The concept reference code
 #   3. A function mapping the old value to
-#         c(obsSalue, setMembers, setValues) | NA
+#         c(obsValue, setMembers, setValues) | NA
 
 # These are the value mapping functions
 id <- function(x) c(obsValue = x, setMembers = NA, setValues = NA)
 wrapValue <- id
-codedYesNoMapper <- function(yesOrNoConcept) {
+getCodedSingleConceptMapper <- function(yesOrNoConcept) {
   return(function(x) {
     if (x) {
       wrapValue(yesOrNoConcept)
@@ -30,8 +30,26 @@ codedYesNoMapper <- function(yesOrNoConcept) {
     }
   })
 }
-codedYes <- codedYesNoMapper("PIH:YES")
-codedNo <- codedYesNoMapper("PIH:NO")
+codedYes <- getCodedSingleConceptMapper("PIH:YES")
+codedNo <- getCodedSingleConceptMapper("PIH:NO")
+codedAnyValueYes <- function(x) {
+  if (is.na(x)) {
+    NA
+  } else {
+    wrapValue("PIH:YES")
+  }
+}
+getCoded12ConceptMapper <- function(trueConcept, falseConcept) {
+  return(function(x) {
+    numericX <- as.numeric(x)
+    if (!is.na(x) && !is.na(numericX)) {
+      wrapValue(switch(numericX, trueConcept, falseConcept))
+    } else {
+      NA
+    }
+  })
+}
+reactiveNonreactive12Mapper <- getCoded12ConceptMapper("CIEL:1228", "CIEL:1229")
 coded12ReactiveText <- function(x) {
   if (!is.na(x)) {
     wrapValue(switch(x, "Reactivo", "No reactivo"))
@@ -57,7 +75,15 @@ numberCleanerMapper <- function(x) {
   wrapValue(ifelse(class(x) == "character", gsub(",", ".", x), x))
 }
 phq9Mapper <- function(x) {
-  wrapValue(ifelse(x > 27, NA, x))
+  numericX <- as.numeric(x)
+  if (is.na(numericX) | numericX > 27) {
+    NA
+  } else {
+    wrapValue(x)
+  }
+}
+dateMapper <- function(x) {
+  wrapValue(Util.TransformDate(x))
 }
 
 # Constants, including mapping specs
@@ -95,6 +121,11 @@ CONSULT_FORM_SPEC <- tribble(
   "LDL", "PIH:LOW-DENSITY LIPOPROTEIN CHOLESTEROL", id,
   # epilepsy
   "Número de ataques", "PIH:Number of seizures in the past month", id,
+  # maternal
+  "FUM.con", "CIEL:1427", dateMapper,
+  "VIH", "CIEL:163722", codedAnyValueYes,
+  "VDRL", "CIEL:299", reactiveNonreactive12Mapper,
+  "Hemglobina", "CIEL:21", numberCleanerMapper,
   # mental
   "PHQ-9", "CIEL:165137", phq9Mapper
 )
@@ -108,15 +139,11 @@ CONSULT_NOTE_APPENDS <- tribble(
   "Efectos Secundarios AD", "Efectos secundarios de antidepresivos", id,
   "Framingham", "DM: Framingham", id,
   "Examen de Orina", "DM: Examen de Orina", id,
-  "VIH", "Emb: VIH", coded12ReactiveText,
-  "VDRL", "Emb: VDRL", coded12ReactiveText,
   "zscore", "Emb: zscore", id,
   "Frecuencia cardiaca fetal", "Emb: Frecuencia cardiaca fetal", id,
   "Fondo uterino", "Emb: Fondo uterino", id,
   "Semanas de Gestación", "Emb: Semanas de Gestación", id,
   "FPP.con", "Emb: FPP.con", id,
-  "FUM.con", "Emb: FUM.con", id,
-  "Hemglobina", "Emb: Hemoglobina", id,
   "EGO", "Emb: EGO", id
 )
 

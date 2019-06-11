@@ -37,7 +37,7 @@ test_that("GetConsults appends community name", {
   expect_equal(output$commName, c("Salvador", "Salvador", "Salvador", "Soledad"))
 })
 
-test_that("PrepareConsultObs produces the expected output", {
+test_that("PrepareConsultObs produces the expected output with vitals mapping spec", {
   rawConsultObs <- tribble(
     ~"accessCol", ~"accessVal",
     "Peso", "30,2",
@@ -46,6 +46,46 @@ test_that("PrepareConsultObs produces the expected output", {
   output <- Con._PrepareConsultObs(rawConsultObs, VITALS_CONSULT_MAPPING_SPEC)
   expect_equal(c("PIH:WEIGHT (KG)", "PIH:HEIGHT (CM)"), output$concept)
   expect_equal(c("30.2", "160"), output$obsValue)
+})
+
+test_that("PrepareConsultObs produces the expected output with consults mapping spec on maternal data with 2s for VIH and VDRL", {
+  rawConsultObs <- tribble(
+    ~"accessCol", ~"accessVal",
+    "FUM.con", "Sat Dec 30 11:14:18 CST 2016",
+    "VIH", "2",
+    "VDRL", "2",
+    "Hemglobina", "13.5"
+  )
+  output <- Con._PrepareConsultObs(rawConsultObs, CONSULT_FORM_SPEC)
+  expect_equal(c("CIEL:1427", "CIEL:21", "CIEL:299", "CIEL:163722"), output$concept)
+  expect_equal(c("2016-12-30T05:14:18-0600", "13.5", "CIEL:1229", "PIH:YES"), output$obsValue)
+})
+  
+  
+test_that("PrepareConsultObs produces the expected output with consults mapping spec on maternal data with 1s for VIH and VDRL", {
+  rawConsultObs <- tribble(
+    ~"accessCol", ~"accessVal",
+    "FUM.con", "Sat Dec 30 11:14:18 CST 2014",
+    "VIH", "1",
+    "VDRL", "1",
+    "Hemglobina", "14"
+  )
+  output <- Con._PrepareConsultObs(rawConsultObs, CONSULT_FORM_SPEC)
+  expect_equal(c("CIEL:1427", "CIEL:21", "CIEL:299", "CIEL:163722"), output$concept)
+  expect_equal(c("2014-12-30T05:14:18-0600", "14", "CIEL:1228", "PIH:YES"), output$obsValue)
+})
+
+test_that("PrepareConsultObs produces the expected output with consults mapping spec on maternal data with NAs for VIH and VDRL", {
+  rawConsultObs <- tribble(
+    ~"accessCol", ~"accessVal",
+    "FUM.con", "Sat Dec 30 11:14:18 CST 2014",
+    "VIH", NA,
+    "VDRL", NA,
+    "Hemglobina", "14"
+  )
+  output <- Con._PrepareConsultObs(rawConsultObs, CONSULT_FORM_SPEC)
+  expect_equal(c("CIEL:1427", "CIEL:21"), output$concept)
+  expect_equal(c("2014-12-30T05:14:18-0600", "14"), output$obsValue)
 })
 
 test_that("PrepareVitalsData returns data with the right number of rows, no NA dates, no NA values", {
@@ -130,3 +170,23 @@ test_that("Consult UUIDs are unique and all match up with an entry from patients
   expect_true(all(output$encounters$`Patient UUID` %in% patients$ptUuid))
 })
 
+test_that("PHQ-9 is generated", {
+  rawConsultObs <- tribble(
+    ~"accessCol", ~"accessVal",
+    "PHQ-9", "11"
+  )
+  output <- Con._PrepareConsultObs(rawConsultObs, CONSULT_FORM_SPEC)
+  expect_equal(c("CIEL:165137"), output$concept)
+  expect_equal(c("11"), as.character(output$obsValue))
+})
+
+test_that("PHQ-9 invalid values are rejected", {
+  rawConsultObs <- tribble(
+    ~"accessCol", ~"accessVal",
+    "PHQ-9", "99",
+    "VIH", "2"
+  )
+  output <- Con._PrepareConsultObs(rawConsultObs, CONSULT_FORM_SPEC)
+  expect_equal(c("CIEL:163722"), output$concept)
+  expect_equal(c("PIH:YES"), as.character(output$obsValue))
+})
