@@ -24,6 +24,7 @@ library("tidyverse")
 source("R/util.R")
 source("R/patient_util.R")
 
+USE_CLEAN_PT_DATA_CACHE <- FALSE
 PT_OUTPUT_PATH = "data/output/patients.csv"
 
 tmp.patients <- Pt.GetCleanedTable()

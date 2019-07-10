@@ -5,8 +5,8 @@ source("R/util.R")
 VERBOSE <- TRUE
 
 CLEAN_PT_DATA_CACHE <- "data/tmp/prepped-patients.csv"
-USE_CLEAN_PT_DATA_CACHE <- FALSE
-  
+USE_CLEAN_PT_DATA_CACHE <- TRUE
+
 PT_COLS_LOGICAL <- c("Actualmente.embarazada", "SPSS", "Oportunidades",
                     "Migrante", "Indígena", "Discapacidad", "SUIVE", "Diabetes",
                     "Hipertensión", "Asma", "Embarazada", "Depresión",
@@ -26,6 +26,45 @@ vprint <- function(content) {
   if (VERBOSE) {
     print(content)
   }
+}
+
+# Mutable Global -- PT_DEDUPED_IDS_MAP (and helpers) ###########################
+
+# We assign new "old" patient IDs to patients who are definitely distinct,
+# but have the same ID. This occurs because the IDs are assigned based on the
+# place where the patient lives, with an incremeting suffix -- this means that
+# something like a third of all patients have an ID that was also used at some
+# other site for someone else.
+#
+# The trouble with this is that we're identifying consults/encounters with
+# patients based on that old ID, and also using it to generate UUIDs. If we
+# just used the un-deduplicated old IDs we'd be generating duplicate UUIDs.
+# So we have to be able to map the consult data onto these new "old IDs."
+# To do this, we keep track of the mapping (oldId, location) -> newOldId.
+# We can then use that mapping to look up the correct newOldId for the patient.
+
+# Arguments
+#   patients: with cols `oldCesId` and `oldCommName`
+#   oldCesIds: a vector. Not a fuckin tibble
+#   oldCommNames: a vector, also
+# Returns
+#   A vector of CES IDs.
+Pt.GetNewCesId <- function(patients, oldCesIds, oldCommNames) {
+  ids <- map2_chr(oldCesIds, oldCommNames,
+                    function(oldId, commName) {
+                      res <- patients[patients$oldCesId == oldId &
+                               patients$oldCommName == commName, ][["CesID"]]
+                      if (length(res) == 0) {
+                        return(oldId)
+                      } else if (length(res) > 1) {
+                        print(paste("WARNING: Multiple patients with CesID", oldId, "at clinic", commName))
+                        return(res[[1]])
+                      } else {
+                        return(res)
+                      }
+                    }
+                  )
+  return(ids)
 }
 
 # Data Prep Helpers ############################################################
@@ -144,19 +183,26 @@ Pt._ParseAddresses <- function(addr) {
   paste("cityVillage", addr, sep = ":")
 }
 
+Pt._PrepPtsForCreateDistinct <- function(patients) {
+  return(mutate(patients, oldCesId = CesID))
+}
+
 Pt._CreateDistinctPatients <- function(patients,
                                        cesid,
                                        removeIfNoBirthYear = FALSE) {
   # split "selected" from patients
-  selected <- patients %>% filter(patients$CesID == cesid)
-  patients %<>% filter(patients$CesID != cesid)
+  selected <- filter(patients, patients$CesID == cesid)
+  patients <- filter(patients, patients$CesID != cesid)
+  # patients %<>% filter(patients$CesID != cesid)
   if (removeIfNoBirthYear) {
     # only preserve "selected" pts who have birth year
     selected %<>% filter(!is.na(selected$FN_Ano))
   }
   # append an index to the CesID of each selected pt
   for (i in seq_len(nrow(selected))) {
-    selected[i, "CesID"] <- paste(selected[i, "CesID"], i, sep = "-")
+    oldCesId <- selected[i, "CesID"]
+    newCesId <- paste(oldCesId, i, sep = "-")
+    selected[i, "CesID"] <- newCesId
   }
   # glue them back together
   return(rbind(patients, selected))
@@ -259,6 +305,13 @@ Pt._ManualDedupe <- function(patients) {
     "092-000043",
     "092-000047",
     "092-000048",
+    "001-000026",
+    "002-000013",
+    "025-000058",
+    "025-000060",
+    "046-000001",
+    "064-000001",
+    "077-000022",
     "100-000002")
   
   patients <- reduce(badIds,
@@ -393,6 +446,7 @@ Pt.CleanTable <- function(input) {
   vprint("..Unfactorize")
   patients %<>% Pt._Unfactorize()
   vprint("..Deduplicate")
+  patients <- Pt._PrepPtsForCreateDistinct(patients)
   patients %<>% Pt._Deduplicate()
   vprint("..SplitDuplicatedCesIds")
   patients <- Pt._SplitDuplicatedCesIds(patients)
@@ -442,7 +496,7 @@ Pt.GetCleanedTable <- function(useCache = NA) {
   }
   input <- Pt.FetchData()
   outputData <- Pt.CleanTable(input)
-  if (UseCache() == TRUE) {
+  if (UseCache() == FALSE) {  # if we didn't pull from the cache, then write to it
     print(paste("Saving patient data to cache at", CLEAN_PT_DATA_CACHE))
     write_csv(outputData, CLEAN_PT_DATA_CACHE, na = "")
   }

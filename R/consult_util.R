@@ -102,7 +102,7 @@ VITALS_CONSULT_MAPPING_SPEC <- tribble(
   "Glucosa", "PIH:SERUM GLUCOSE", id
 )
 
-CONSULT_FORM_ENCOUNTER_TYPE <- "Mexico Consult"
+CONSULT_FORM_ENCOUNTER_TYPE <- "Consult"
 CONSULT_FORM_UUID <- "b5a50e02-bc3b-4bc9-8d6f-a4decad17a97"
 CONSULT_FORM_SPEC <- tribble(
   ~"accessCol", ~"concept", ~"valueMapper",
@@ -213,7 +213,7 @@ Con._Unfactorize <- function(consults) {
 
 #' PrepareOutputEncAndObs
 #'
-#' @param consults
+#' @param consults (tbl) Consults joined with Patients
 #' @param mappingSpec
 #' @param encounterType
 #' @param appendSpec (NULL | tbl) default NULL. If specified, should be tbl
@@ -373,8 +373,11 @@ Con.PrepareGeneralConsultData <- function(consults, patients) {
   # Drop rows with no CESid
   consults <- consults[!is.na(consults["CESid"]) & consults["CESid"] != "", ]
 
+  vprint("...Looking up new CesIDs")
+  newCesId <- Pt.GetNewCesId(patients, consults[["CESid"]], consults[["oldCommName"]])
+  consults <- add_column(consults, newCesId = unlist(newCesId, use.names=FALSE))
   consults <- inner_join(consults, patients,
-    by = c("CESid" = "CesID"),
+    by = c("newCesId" = "CesID"),
     suffix = c(".con", ".pt")
   )
   consultDate <- Util.TransformDate(consults$Fecha)

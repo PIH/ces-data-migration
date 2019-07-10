@@ -25,6 +25,13 @@ Util.AnyEntryNotNa <- function(data, colNames) {
   return(apply(entriesNotNa, 1, any))
 }
 
+Util._AccessCommNamesFromCommunityPaths <- function(communityPaths) {
+  communityPaths   %>%
+    strsplit("/", fixed = TRUE) %>%
+    map(function(p) { p[3] })   %>%
+    unlist()
+}
+
 Util._CommNamesFromCommunityPaths <- function(communityPaths) {
   communityPaths   %>%
     strsplit("/", fixed = TRUE) %>%
@@ -32,13 +39,6 @@ Util._CommNamesFromCommunityPaths <- function(communityPaths) {
     unlist()                    %>%
     {ifelse(. == "Laguna", "Laguna del Cofre", .)} %>%
     {ifelse(. %in% c("Plan_Alta", "Plan_Baja"), "Plan de la Libertad", .)}
-}
-
-Util.FlattenWithClinicNamesTypeSafe <- function(perCommunityTbl, communityPaths) {
-  commNames <- Util._CommNamesFromCommunityPaths(communityPaths)
-  tblsWithComms <- tibble(commName = commNames, data = perCommunityTbl)
-  fullTbl <- unnest(tblsWithComms)
-  return(fullTbl)
 }
 
 Util.AppendClinicNames <- function(perCommunityTbl, communityPaths) {
@@ -50,7 +50,15 @@ Util.AppendClinicNames <- function(perCommunityTbl, communityPaths) {
       add_column(df, commName = commName)
     }
   )
-  return(tableWithClinics)
+  oldCommNames <- Util._AccessCommNamesFromCommunityPaths(communityPaths)
+  tableWithOldNames <- map2(
+    tableWithClinics,
+    oldCommNames,
+    function(df, oldCommName) {
+      add_column(df, oldCommName = oldCommName)
+    }
+  )
+  return(tableWithOldNames)
 }
 
 Util.CommunityPaths <- function() {

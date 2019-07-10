@@ -63,6 +63,56 @@ test_that("FilterUnsalvagableData removes no-name row", {
   expect_equal(nrow(naRow), 0)
 })
 
+test_that("CreateDistinctPatients splits CES IDs and adds the old IDs as a column", {
+  patients <- tribble(
+    ~"CesID", ~"Nombre", ~"commName", ~"oldCommName",
+    "1-0001", "William", "Laguna del Cofre", "Laguna",
+    "1-0001", "Douglas", "Soledad", "Soledad",
+    "1-0001", "Ricky", "Salvador", "Salvador",
+    "1-0002", "Bill", "Plan de la Libertad", "Plan_Alta",
+    "1-0002", "Gregory", "Plan de la Libertad", "Plan_Baja"
+  )
+  patients <- Pt._PrepPtsForCreateDistinct(patients)
+  output <- Pt._CreateDistinctPatients(patients, "1-0001")
+  
+  # Check new CesIDs
+  expect_equal(output[output$CesID == "1-0001-1", ][["Nombre"]], "William")
+  expect_equal(output[output$CesID == "1-0001-2", ][["Nombre"]], "Douglas")
+  expect_equal(output[output$CesID == "1-0001-3", ][["Nombre"]], "Ricky")
+  expect_equal(nrow(output[output$CesID == "1-0001", ]), 0)
+  
+  # Check that we can look up the old ones
+  expect_equal(output[output$oldCesId == "1-0001" &
+                      output$oldCommName == "Laguna", ][["CesID"]],
+               "1-0001-1")
+  expect_equal(output[output$oldCesId == "1-0001" &
+                      output$oldCommName == "Soledad", ][["CesID"]],
+               "1-0001-2")
+})
+
+test_that("GetNewCesId looks up vectors", {
+  patients <- tribble(
+    ~"CesID", ~"Nombre", ~"commName", ~"oldCommName", ~"oldCesId",
+    "1-0001-1", "William", "Laguna del Cofre", "Laguna", "1-0001",
+    "1-0001-2", "Douglas", "Soledad", "Soledad", "1-0001",
+    "1-0001-3", "Ricky", "Salvador", "Salvador", "1-0001",
+    "1-0002", "Bill", "Plan de la Libertad", "Plan_Alta", "1-0002",
+    "1-0002", "Gregory", "Plan de la Libertad", "Plan_Baja", "1-0002"
+  )
+  newIds <- Pt.GetNewCesId(patients, c("1-0001", "1-0002"), c("Laguna", "Plan_Baja"))
+  expect_equal(newIds, c("1-0001-1", "1-0002"))
+})
+
+test_that("GetNewCesId defaults to the input CesId", {
+  patients <- tribble(
+    ~"CesID", ~"Nombre", ~"commName", ~"oldCommName", ~"oldCesId",
+    "1-0001-1", "William", "Laguna del Cofre", "Laguna", "1-0001",
+    "1-0001-2", "Douglas", "Soledad", "Soledad", "1-0001"
+  )
+  newIds <- Pt.GetNewCesId(patients, c("1-0001", "1-2000"), c("Laguna", "Plan_Baja"))
+  expect_equal(newIds, c("1-0001-1", "1-2000"))
+})
+
 test_that("ManualDedupe takes care of Bentobox Cuckooclock", {
   output <- Pt._ManualDedupe(TestPatients())
   bentoboxes <- output[startsWith(output$CesID, "001-000020"), ]
@@ -110,7 +160,7 @@ test_that("uuids are deterministic", {
 
 test_that("uuids are maintained over cache load", {
   file.remove(CLEAN_PT_DATA_CACHE)
-  runResults <- Pt.GetCleanedTable(useCache = TRUE)
+  runResults <- Pt.GetCleanedTable(useCache = FALSE)
   cacheData <- read.csv(CLEAN_PT_DATA_CACHE)
   expect_equal(as.character(cacheData$ptUuid), as.character(runResults$ptUuid))
   cachedRunResults <- Pt.GetCleanedTable(useCache = TRUE)

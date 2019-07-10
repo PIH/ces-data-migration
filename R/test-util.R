@@ -23,15 +23,24 @@ test_that("AnyEntryNotNa selects the correct rows", {
   expect_equal(output, c(TRUE, TRUE, FALSE))
 })
 
+test_that("AccessCommNamesFromCommunityPaths gets last part of path", {
+  paths <- Util.CommunityPaths()
+  output <- Util._AccessCommNamesFromCommunityPaths(paths)
+  expect_equal(output[[3]], "Laguna")
+  expect_equal(output[[7]], "Plan_Alta")
+})
+
 test_that("AppendClinicNames produces the expected data", {
   tblPerSite <- list(
     tibble(foo = c(0, 1), bar = c(2, 3), baz = c(4, 5)),
     tibble(foo = c(3, 2), bar = c(4, 8), baz = c(2, 6))
   )
-  sites <- c("data/test/Earth/Thing.csv", "data/test/Space/Thing.csv")
+  sites <- c("data/test/Earth/Thing.csv", "data/test/Plan_Baja/Thing.csv")
   output <- Util.AppendClinicNames(tblPerSite, sites)
   expect_equal(output[[1]]$commName, c("Earth", "Earth"))
-  expect_equal(output[[2]]$commName, c("Space", "Space"))
+  expect_equal(output[[2]]$commName, c("Plan de la Libertad", "Plan de la Libertad"))
+  expect_equal(output[[1]]$oldCommName, c("Earth", "Earth"))
+  expect_equal(output[[2]]$oldCommName, c("Plan_Baja", "Plan_Baja"))
 })
 
 test_that("CsvToTibble generates a tibble with the right dimensions", {
