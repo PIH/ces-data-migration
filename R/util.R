@@ -102,7 +102,7 @@ Util.IsTrue <- function(x) {
 
 Util.ParseAccessDate <- function(dateString) {
   lubridate::parse_date_time(
-    dateString, "%a %b %d %H:%M:%S ... %Y"
+    dateString, "%a %b %d %H:%M:%S ... %Y", tz = "CST"
   )
 }
 
@@ -110,7 +110,7 @@ Util.CoerceDateIfInvalid <- function(dateObj) {
   DateIsInvalid <- function(date) {
     is.na(date) | lubridate::year(date) < 1990 | difftime(Sys.Date(), date) < 0
   }
-  defaultDate <- as.POSIXct(lubridate::make_date(1990, 1, 1))
+  defaultDate <- as.POSIXct(lubridate::make_datetime(1990, 1, 1, tz = "America/Mexico_City"))
   dateObj <- if_else(DateIsInvalid(dateObj), defaultDate, dateObj)
   return(dateObj)
 }
@@ -133,10 +133,10 @@ Util.IsoDateString <- function(dateObj) {
 #'
 #' @return ISO datestring like '2015-01-12T00:00:00Z'
 Util.TransformDate <- function(dateString) {
-  dateString %>%
-    Util.ParseAccessDate() %>%
-    Util.CoerceDateIfInvalid() %>%
-    Util.IsoDateString()
+  dateString <- Util.ParseAccessDate(dateString)
+  dateString <- Util.CoerceDateIfInvalid(dateString)
+  dateString <- Util.IsoDateString(dateString)
+  return(dateString)
 }
 
 #' UuidHash

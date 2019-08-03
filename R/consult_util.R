@@ -17,6 +17,7 @@ source("R/util.R")
 #   2. The concept reference code
 #   3. A function mapping the old value to
 #         c(obsValue, setMembers, setValues) | NA
+#      Where setMembers and setValues are semicolon-delimited chars.
 
 # These are the value mapping functions
 id <- function(x) c(obsValue = x, setMembers = NA, setValues = NA)
@@ -71,16 +72,21 @@ symptomPresentAbsentMapper <- function(diagnosisConcept, absentOrPresent) {
     }
   })
 }
-numberCleanerMapper <- function(x) {
-  wrapValue(ifelse(class(x) == "character", gsub(",", ".", x), x))
+cleanNumber <- function(x) {
+  ifelse(class(x) == "character", gsub(",", ".", x), x)
 }
-phq9Mapper <- function(x) {
-  numericX <- as.numeric(x)
-  if (is.na(numericX) | numericX > 27) {
-    NA
-  } else {
-    wrapValue(x)
-  }
+numberCleanerMapper <- function(x) {
+  wrapValue(cleanNumber(x))
+}
+limitMapper <- function(min, max) {
+  return(function(x) {
+    numericX <- as.numeric(cleanNumber(x))
+    if (is.na(numericX) | numericX > max | numericX < min) {
+      NA
+    } else {
+      wrapValue(x)
+    }
+  })
 }
 dateMapper <- function(x) {
   wrapValue(Util.TransformDate(x))
@@ -91,15 +97,15 @@ VITALS_ENCOUNTER_TYPE <- "Signes vitaux"
 VITALS_FORM_UUID <- "08ab34d0-0209-434d-8995-3923a76af70c"
 VITALS_CONSULT_MAPPING_SPEC <- tribble(
   ~"accessCol", ~"concept", ~"valueMapper",
-  "PA Sistólica", "PIH:SYSTOLIC BLOOD PRESSURE", id,
-  "PA Diastólica", "PIH:DIASTOLIC BLOOD PRESSURE", id,
-  "Sat de Oxigeno", "PIH:BLOOD OXYGEN SATURATION", numberCleanerMapper,
-  "FC", "PIH:PULSE", id,
-  "FR", "PIH:RESPIRATORY RATE", id,
-  "Peso", "PIH:WEIGHT (KG)", numberCleanerMapper,
-  "Talla.con", "PIH:HEIGHT (CM)", numberCleanerMapper,
-  "Temperatura", "PIH:TEMPERATURE (C)", numberCleanerMapper,
-  "Glucosa", "PIH:SERUM GLUCOSE", id
+  "PA Sistólica", "PIH:SYSTOLIC BLOOD PRESSURE", limitMapper(50, 280),
+  "PA Diastólica", "PIH:DIASTOLIC BLOOD PRESSURE", limitMapper(30, 150),
+  "Sat de Oxigeno", "PIH:BLOOD OXYGEN SATURATION", limitMapper(0, 100),
+  "FC", "PIH:PULSE", limitMapper(0, 300),
+  "FR", "PIH:RESPIRATORY RATE", limitMapper(0, 120),
+  "Peso", "PIH:WEIGHT (KG)", limitMapper(0.1, 250),
+  "Talla.con", "PIH:HEIGHT (CM)", limitMapper(10, 228),
+  "Temperatura", "PIH:TEMPERATURE (C)", limitMapper(25, 43),
+  "Glucosa", "PIH:SERUM GLUCOSE", limitMapper(0, 1000)
 )
 
 CONSULT_FORM_ENCOUNTER_TYPE <- "Consult"
@@ -115,7 +121,7 @@ CONSULT_FORM_SPEC <- tribble(
   "Medicamento de rescateSI", "PIH:Medications more that twice per week", codedYes,
   "Medicamento de rescateNO", "PIH:Medications more that twice per week", codedNo,
   # diabetes
-  "Glucosa", "PIH:SERUM GLUCOSE", id,
+  "Glucosa", "PIH:SERUM GLUCOSE", limitMapper(0, 1000),
   "Colesterol", "PIH:TOTAL CHOLESTEROL", id,
   "HDL", "PIH:HIGH-DENSITY LIPOPROTEIN CHOLESTEROL", id,
   "LDL", "PIH:LOW-DENSITY LIPOPROTEIN CHOLESTEROL", id,
@@ -127,7 +133,7 @@ CONSULT_FORM_SPEC <- tribble(
   "VDRL", "CIEL:299", reactiveNonreactive12Mapper,
   "Hemglobina", "CIEL:21", numberCleanerMapper,
   # mental
-  "PHQ-9", "CIEL:165137", phq9Mapper
+  "PHQ-9", "CIEL:165137", limitMapper(0, 27)
 )
 
 # Here we define a specification for columns that don't yet or won't exist
@@ -185,7 +191,7 @@ Con._GenerateEncounterUuid <- function(consults, consultType) {
 
 #' GenerateObsUuid
 #'
-#' @param consultObs (tbl) one row per obs, with col `obsType`
+#' @param consultObs (tbl) one row per obs
 #'
 #' @return A UUID with dashes, unique per consult-column
 Con._GenerateObsUuid <- function(consults) {
@@ -363,13 +369,13 @@ Con.GetConsults <- function() {
 
 #' PrepareGeneralConsultData
 #'
-#' @param consults : raw, flattened consults from consultsPerCommunity
+#' @param consults : raw, flattened consults from Con.GetConsults
 #' @param patients : cleaned patients table from Pat.GetCleanedTable()
 #'
 #' @return consults, with a bunch of additional columns not specific to
 #'           a particular type of encounter or observation
 #' @export
-Con.PrepareGeneralConsultData <- function(consults, patients) {
+Con.PrepareGeneralConsultData <- function(consults, patients, diagnoses = NA) {
   # Drop rows with no CESid
   consults <- consults[!is.na(consults["CESid"]) & consults["CESid"] != "", ]
 
@@ -381,9 +387,8 @@ Con.PrepareGeneralConsultData <- function(consults, patients) {
     suffix = c(".con", ".pt")
   )
   consultDate <- Util.TransformDate(consults$Fecha)
-  consults <- bind_cols(consults,
-    consultDate = consultDate
-  )
+  consults <- bind_cols(consults, consultDate = consultDate)
+  consults <- filter(consults, ptUuid != Util.UuidHash(""))
   return(consults)
 }
 

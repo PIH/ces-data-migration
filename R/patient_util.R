@@ -28,8 +28,8 @@ vprint <- function(content) {
   }
 }
 
-# Mutable Global -- PT_DEDUPED_IDS_MAP (and helpers) ###########################
-
+# GetNewCesId
+#
 # We assign new "old" patient IDs to patients who are definitely distinct,
 # but have the same ID. This occurs because the IDs are assigned based on the
 # place where the patient lives, with an incremeting suffix -- this means that
@@ -42,7 +42,7 @@ vprint <- function(content) {
 # So we have to be able to map the consult data onto these new "old IDs."
 # To do this, we keep track of the mapping (oldId, location) -> newOldId.
 # We can then use that mapping to look up the correct newOldId for the patient.
-
+#
 # Arguments
 #   patients: with cols `oldCesId` and `oldCommName`
 #   oldCesIds: a vector. Not a fuckin tibble
@@ -154,6 +154,11 @@ Pt._ParseAndFixBirthdates <- function(patients) {
     d <- pt[["FN_Dia"]]
     if (is.na(d) | d < 1 | d > 31) {
       d <- 1
+      estimated <- TRUE
+    }
+    if (y >= 2019 & m > 7) {
+      y <- 1900
+      m <- 1
       estimated <- TRUE
     }
     patients[i, "birthdate"] <- paste(y, m, d, sep = "-")
