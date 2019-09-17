@@ -1,6 +1,6 @@
 PackratFormat: 1.4
 PackratVersion: 0.5.0
-RVersion: 3.4.4
+RVersion: 3.5.2
 Repos: CRAN=https://cloud.r-project.org
 
 Package: BH
@@ -60,16 +60,11 @@ Version: 0.2.2
 Hash: 8ce499301f0dc5c7ff69f0b42e33f5c1
 Requires: Rcpp, bindr, plogr
 
-Package: brew
-Source: CRAN
-Version: 1.0-6
-Hash: 931f9972deae0f205e1c78a51f33149b
-
 Package: broom
 Source: CRAN
 Version: 0.5.1
 Hash: f170bc989c523e039487511e87c1854f
-Requires: backports, dplyr, generics, purrr, reshape2, stringr, tibble,
+Requires: backports, generics, purrr, stringr, reshape2, tibble, dplyr,
     tidyr
 
 Package: callr
@@ -100,11 +95,6 @@ Source: CRAN
 Version: 1.4-0
 Hash: 5eef58a5bcfd315a326eeaf43720cd26
 
-Package: commonmark
-Source: CRAN
-Version: 1.7
-Hash: 77f4ba718e2bad1877ef26e48cf8fa43
-
 Package: crayon
 Source: CRAN
 Version: 1.3.4
@@ -119,14 +109,8 @@ Package: dbplyr
 Source: CRAN
 Version: 1.3.0
 Hash: b42cd2910f0494b711ee5ef5fe2a71c2
-Requires: DBI, R6, assertthat, dplyr, glue, purrr, rlang, tibble,
-    tidyselect
-
-Package: desc
-Source: CRAN
-Version: 1.2.0
-Hash: a0a3ca939997679a52816bae4ed6aaae
-Requires: R6, assertthat, crayon, rprojroot
+Requires: DBI, R6, assertthat, glue, rlang, purrr, tidyselect, tibble,
+    dplyr
 
 Package: digest
 Source: CRAN
@@ -137,8 +121,8 @@ Package: dplyr
 Source: CRAN
 Version: 0.7.8
 Hash: c965954fb9a071cb0e5194528223aa72
-Requires: BH, R6, Rcpp, assertthat, bindrcpp, glue, magrittr,
-    pkgconfig, plogr, rlang, tibble, tidyselect
+Requires: BH, R6, Rcpp, assertthat, glue, magrittr, pkgconfig, plogr,
+    rlang, bindrcpp, tidyselect, tibble
 
 Package: ellipsis
 Source: CRAN
@@ -176,8 +160,8 @@ Package: ggplot2
 Source: CRAN
 Version: 3.1.0
 Hash: ef541b05dda10b209d509b5bbaf46ea3
-Requires: digest, gtable, lazyeval, plyr, reshape2, rlang, scales,
-    tibble, viridisLite, withr
+Requires: digest, gtable, lazyeval, rlang, viridisLite, withr, plyr,
+    scales, reshape2, tibble
 
 Package: glue
 Source: CRAN
@@ -193,7 +177,7 @@ Package: haven
 Source: CRAN
 Version: 2.0.0
 Hash: 3180a95083d9ef6da3fafc38e0519e2f
-Requires: Rcpp, forcats, hms, readr, tibble
+Requires: Rcpp, hms, tibble, forcats, readr
 
 Package: highr
 Source: CRAN
@@ -227,7 +211,7 @@ Package: knitr
 Source: CRAN
 Version: 1.21
 Hash: 05d92a30fe7f149fef5e82428cbbe0d7
-Requires: evaluate, highr, markdown, stringr, xfun, yaml
+Requires: evaluate, highr, xfun, yaml, markdown, stringr
 
 Package: labeling
 Source: CRAN
@@ -265,17 +249,7 @@ Package: modelr
 Source: CRAN
 Version: 0.1.3
 Hash: 26fd9884d137b15738b06e2366ee085f
-Requires: broom, dplyr, magrittr, purrr, rlang, tibble, tidyr
-
-Package: modules
-Source: github
-Version: 0.9.10
-Hash: 919ff1c24395685877ba963f787f2aa5
-Requires: roxygen2
-GithubRepo: modules
-GithubUsername: klmr
-GithubRef: master
-GithubSha1: b279fc68cf23c335be75fa737e03a761381473d8
+Requires: magrittr, rlang, purrr, tibble, dplyr, tidyr, broom
 
 Package: munsell
 Source: CRAN
@@ -298,24 +272,12 @@ Package: pillar
 Source: CRAN
 Version: 1.3.1
 Hash: 9ed4c2a5d3047bfba3e852ad5e806d91
-Requires: cli, crayon, fansi, rlang, utf8
-
-Package: pkgbuild
-Source: CRAN
-Version: 1.0.2
-Hash: 770e918f4c389e4fef9a891d043bf84f
-Requires: R6, callr, cli, crayon, desc, prettyunits, rprojroot, withr
+Requires: crayon, fansi, rlang, utf8, cli
 
 Package: pkgconfig
 Source: CRAN
 Version: 2.0.2
 Hash: b0fd6ed908e150b77e5f00c6478bd58c
-
-Package: pkgload
-Source: CRAN
-Version: 1.0.2
-Hash: 41eb2db35be61f6f9e8864cf87a1ecb0
-Requires: desc, pkgbuild, rlang, rprojroot, rstudioapi, withr
 
 Package: plogr
 Source: CRAN
@@ -349,7 +311,7 @@ Package: progress
 Source: CRAN
 Version: 1.2.0
 Hash: 0ff5f631b66daf57857f28062f3e6f30
-Requires: R6, crayon, hms, prettyunits
+Requires: R6, crayon, prettyunits, hms
 
 Package: ps
 Source: CRAN
@@ -372,7 +334,7 @@ Package: readxl
 Source: CRAN
 Version: 1.3.0
 Hash: dbc35779c08162b2d7821e83146501cb
-Requires: Rcpp, cellranger, progress, tibble
+Requires: Rcpp, progress, tibble, cellranger
 
 Package: rematch
 Source: CRAN
@@ -383,7 +345,7 @@ Package: reprex
 Source: CRAN
 Version: 0.2.1
 Hash: b30c7fbcb528a71d7ffcd07c9982589d
-Requires: callr, clipr, fs, rlang, rmarkdown, whisker, withr
+Requires: clipr, rlang, whisker, withr, fs, callr, rmarkdown
 
 Package: reshape2
 Source: CRAN
@@ -400,25 +362,8 @@ Package: rmarkdown
 Source: CRAN
 Version: 1.11
 Hash: a30b0c41b60d981f41dc8c98f2136297
-Requires: base64enc, evaluate, htmltools, jsonlite, knitr, mime,
-    stringr, tinytex, yaml
-
-Package: roxygen2
-Source: github
-Version: 6.1.1.9000
-Hash: a73b9355e85edae7c16f6e838f49b26f
-Requires: R6, Rcpp, brew, commonmark, desc, digest, pkgload, purrr,
-    stringi, stringr, xml2
-GithubRepo: roxygen
-GithubUsername: klutometis
-GithubRef: master
-GithubSha1: c42a2f0ddb7006af5ce1f0462064a9c4424e510a
-
-Package: rprojroot
-Source: CRAN
-Version: 1.3-2
-Hash: a25c3f70c166fb3fbabc410eb32b6366
-Requires: backports
+Requires: base64enc, evaluate, jsonlite, mime, yaml, htmltools,
+    stringr, tinytex, knitr
 
 Package: rstudioapi
 Source: CRAN
@@ -429,13 +374,13 @@ Package: rvest
 Source: CRAN
 Version: 0.3.2
 Hash: c69f7526520bad66fd2111ebe8b1364b
-Requires: httr, magrittr, selectr, xml2
+Requires: magrittr, xml2, selectr, httr
 
 Package: scales
 Source: CRAN
 Version: 1.0.0
 Hash: 7d9b717abcec656ae7c5c982d72b75e5
-Requires: R6, RColorBrewer, Rcpp, labeling, munsell, viridisLite
+Requires: R6, RColorBrewer, Rcpp, labeling, viridisLite, munsell
 
 Package: selectr
 Source: CRAN
@@ -474,29 +419,29 @@ Package: tibble
 Source: CRAN
 Version: 2.0.1
 Hash: d2a00b9a314cfad8f6b51e2c97aaff5c
-Requires: cli, crayon, fansi, pillar, pkgconfig, rlang
+Requires: crayon, fansi, pkgconfig, rlang, cli, pillar
 
 Package: tidyr
 Source: CRAN
 Version: 0.8.2
 Hash: 9ff92b9b3c11dfcd94d179b75b85c668
-Requires: Rcpp, dplyr, glue, magrittr, purrr, rlang, stringi, tibble,
-    tidyselect
+Requires: Rcpp, glue, magrittr, rlang, stringi, purrr, tidyselect,
+    tibble, dplyr
 
 Package: tidyselect
 Source: CRAN
 Version: 0.2.5
 Hash: fad1cf10c5c4996fca6ca68e0716d2e6
-Requires: Rcpp, glue, purrr, rlang
+Requires: Rcpp, glue, rlang, purrr
 
 Package: tidyverse
 Source: CRAN
 Version: 1.2.1
 Hash: 1b090209cb20b6fc6eba75de8b7f0b53
-Requires: broom, cli, crayon, dbplyr, dplyr, forcats, ggplot2, haven,
-    hms, httr, jsonlite, lubridate, magrittr, modelr, purrr, readr,
-    readxl, reprex, rlang, rstudioapi, rvest, stringr, tibble, tidyr,
-    xml2
+Requires: crayon, jsonlite, magrittr, rlang, rstudioapi, xml2, cli,
+    hms, purrr, stringr, lubridate, tibble, httr, dplyr, forcats,
+    ggplot2, readr, reprex, rvest, readxl, dbplyr, tidyr, haven, broom,
+    modelr
 
 Package: tinytex
 Source: CRAN

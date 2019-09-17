@@ -3,11 +3,7 @@ use.cache: FALSE
 print.banner.on.startup: auto
 vcs.ignore.lib: TRUE
 vcs.ignore.src: TRUE
-external.packages:
-    devtools
-    roxygen2
-    usethis
-    styler
+external.packages: tidyverse
 local.repos: 
 load.external.packages.on.startup: TRUE
 ignored.packages: 
