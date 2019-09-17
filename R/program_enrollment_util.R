@@ -67,6 +67,9 @@ PE.PrepareProgramEnrollments <- function(patients) {
   
   programEntries <- programEntriesUnfiltered[programEntriesUnfiltered$accessVal, ]
   
+  # Filter out old pregnancies
+  programEntries <- programEntries[programEntries$accessCol != "Embarazada" | programEntries$enrollDate > lubridate::ymd("2018-06-01"), ]
+  
   # Add peUuid
   peUuid <- PE._GeneratePeUuid(programEntries)
   programEntries <- add_column(programEntries, peUuid = peUuid)

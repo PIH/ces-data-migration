@@ -38,6 +38,8 @@ Util._CommNamesFromCommunityPaths <- function(communityPaths) {
     map(function(p) { p[3] })   %>%
     unlist()                    %>%
     {ifelse(. == "Laguna", "Laguna del Cofre", .)} %>%
+    {ifelse(. == "ZCirugia", "Hospital", .)} %>%
+    {ifelse(. == "ZHospiClinic", "Hospital", .)} %>%
     {ifelse(. %in% c("Plan_Alta", "Plan_Baja"), "Plan de la Libertad", .)}
 }
 

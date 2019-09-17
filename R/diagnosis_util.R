@@ -61,7 +61,7 @@ Dx.PrepareDiagnosisData <- function(rawDiagnoses, consults) {
   consults <- add_column(consults, encUuid = encUuids)
   vprint("..Join Consultas with Diagnosticos")
   diagnoses <- inner_join(consults, rawDiagnoses,
-    by = "ConsID",
+    by = c("ConsID" = "ConsID", "commName.con" = "commName"),
     suffix = c(".con", ".dx")
   )
   vprint("..Generate Obs UUID")

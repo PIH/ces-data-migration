@@ -16,6 +16,8 @@ PT_COLS_CHAR <- c("CesID", "Nombre", "Apellido", "AM_Fecha", "DEP_Fecha",
                   "DM_Fecha", "EMB_Fecha", "EP_Fecha", "HTN_Fecha",
                   "DES_Fecha")
 
+PT_COLS_CHAR_IMPORTANT <- c("CesID", "Nombre", "Apellido")
+
 vcat <- function(content) {
   if (VERBOSE) {
     cat(content)
@@ -53,12 +55,13 @@ Pt.GetNewCesId <- function(patients, oldCesIds, oldCommNames) {
   ids <- map2_chr(oldCesIds, oldCommNames,
                     function(oldId, commName) {
                       res <- patients[patients$oldCesId == oldId &
-                               patients$oldCommName == commName, ][["CesID"]]
+                               patients$oldCommName == commName &
+                                 !is.na(patients$oldCesId), ][["CesID"]]
                       if (length(res) == 0) {
                         return(oldId)
                       } else if (length(res) > 1) {
                         print(paste("WARNING: Multiple patients with CesID", oldId, "at clinic", commName))
-                        return(res[[1]])
+                        return(res[1])
                       } else {
                         return(res)
                       }
@@ -66,6 +69,8 @@ Pt.GetNewCesId <- function(patients, oldCesIds, oldCommNames) {
                   )
   return(ids)
 }
+
+Pt.GetNewCesId(patients, "79", "Monterrey")
 
 # Data Prep Helpers ############################################################
 
@@ -222,102 +227,16 @@ Pt._CreateDistinctPatients <- function(patients,
 Pt._ManualDedupe <- function(patients) {
   
   badIds <- c(
-    "001-000020",
-    "002-000039",
-    "077-000011",
-    "001-000005", 
+    "001-000020", 
     "001-000031", 
     "001-000041", 
-    "009-000006", 
-    "009-000007", 
-    "011-000010", 
-    "011-000014", 
-    "028-000001", 
-    "035-000003", 
+    "002-000039", 
+    "009-000006",
     "047-000010", 
+    "077-000022", 
     "100-000001", 
-    "139-000001", 
-    "142-000002",
-    "001-000001",
-    "001-000011",
-    "001-000012",
-    "001-000016",
-    "001-000023",
-    "001-000025",
-    "001-000028",
-    "001-000030",
-    "001-000036",
-    "001-000037",
-    "002-000016",
-    "002-000022",
-    "002-000023",
-    "002-000030",
-    "002-000041",
-    "007-000013",
-    "011-000003",
-    "011-000008",
-    "011-000024",
-    "011-000027",
-    "012-000001",
-    "012-000003",
-    "016-000002",
-    "017-000002",
-    "017-000005",
-    "025-000003",
-    "025-000007",
-    "025-000014",
-    "025-000018",
-    "025-000021",
-    "025-000026",
-    "025-000032",
-    "025-000038",
-    "025-000047",
-    "025-000053",
-    "025-000055",
-    "025-000057",
-    "030-000004",
-    "030-000006",
-    "051-000003",
-    "055-000001",
-    "059-000008",
-    "063-000001",
-    "064-000002",
-    "066-000002",
-    "067-000001",
-    "070-000001",
-    "072-000001",
-    "077-000006",
-    "077-000016",
-    "077-000018",
-    "077-000020",
-    "077-000021",
-    "077-000023",
-    "079-000005",
-    "084-000002",
-    "086-000001",
-    "087-000006",
-    "087-000018",
-    "087-000027",
-    "087-000030",
-    "087-000034",
-    "087-000037",
-    "087-000049",
-    "087-000050",
-    "088-000029",
-    "088-000031",
-    "092-000025",
-    "092-000025",
-    "092-000043",
-    "092-000047",
-    "092-000048",
-    "001-000026",
-    "002-000013",
-    "025-000058",
-    "025-000060",
-    "046-000001",
-    "064-000001",
-    "077-000022",
-    "100-000002")
+    "142-000002" 
+    )
   
   patients <- reduce(badIds,
                      Pt._CreateDistinctPatients,
@@ -372,9 +291,14 @@ Pt._Deduplicate <- function(patients) {
       }
       if (length(goodItem) > 1) {
         res[[col]] <- goodItem[[1]]
+        manualDedupeMsg <- ""
+        if (col %in% PT_COLS_CHAR_IMPORTANT) {
+          manualDedupeMsg <- "    Consider handling the patient in ManualDedupe(...)"
+        }
         print(paste("WARNING: multiple values for", col, "for person", res$idAndNames, ": ", paste(goodItem, collapse = " "),
             "    Patient exists in ", paste(group$commName, collapse = " "),
-            "    Consider handling the patient in ManualDedupe(...)"))
+            manualDedupeMsg
+            ))
       }
     }
     # prefer false positives to false negatives
