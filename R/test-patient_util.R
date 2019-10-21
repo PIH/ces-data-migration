@@ -92,20 +92,20 @@ test_that("CreateDistinctPatients splits CES IDs and adds the old IDs as a colum
 
 test_that("GetNewCesId looks up vectors", {
   patients <- tribble(
-    ~"CesID", ~"Nombre", ~"commName", ~"oldCommName", ~"oldCesId",
-    "1-0001-1", "William", "Laguna del Cofre", "Laguna", "1-0001",
-    "1-0001-2", "Douglas", "Soledad", "Soledad", "1-0001",
+    ~"CesID", ~"Nombre", ~"commName", ~"allOldCommNames", ~"oldCesId",
+    "1-0001-1", "William", "Laguna del Cofre", "Laguna,Letrero", "1-0001",
+    "1-0001-2", "Douglas", "Soledad", "Soledad,Matazano", "1-0001",
     "1-0001-3", "Ricky", "Salvador", "Salvador", "1-0001",
     "1-0002", "Bill", "Plan de la Libertad", "Plan_Alta", "1-0002",
     "1-0002", "Gregory", "Plan de la Libertad", "Plan_Baja", "1-0002"
   )
-  newIds <- Pt.GetNewCesId(patients, c("1-0001", "1-0002"), c("Laguna", "Plan_Baja"))
-  expect_equal(newIds, c("1-0001-1", "1-0002"))
+  newIds <- Pt.GetNewCesId(patients, c("1-0001", "1-0002"), c("Matazano", "Plan_Baja"))
+  expect_equal(newIds, c("1-0001-2", "1-0002"))
 })
 
 test_that("GetNewCesId defaults to the input CesId", {
   patients <- tribble(
-    ~"CesID", ~"Nombre", ~"commName", ~"oldCommName", ~"oldCesId",
+    ~"CesID", ~"Nombre", ~"commName", ~"allOldCommNames", ~"oldCesId",
     "1-0001-1", "William", "Laguna del Cofre", "Laguna", "1-0001",
     "1-0001-2", "Douglas", "Soledad", "Soledad", "1-0001"
   )
@@ -125,11 +125,13 @@ test_that("Deduplicate takes care of Rumblesack Cummerbund", {
   output <- Pt._Deduplicate(TestPatients())
   rumblesacks <- output[startsWith(output$CesID, "112-000351"), ]
   expect_equal(nrow(rumblesacks), 1)
-  # Birthday comes from Salvidor
+  # Birthday comes from Salvador
   expect_equal(rumblesacks[[1, "FN_Ano"]], 2011)
   # HTN data should be pulled from Soledad
   expect_true(rumblesacks[[1, "Hipertensión"]])
   expect_equal(rumblesacks[[1, "HTN_Fecha"]], "Fri May 19 00:00:00 CDT 2017")
+  # Should have "allOldCommNames" equal to "Salvador,Soledad"
+  expect_equal(rumblesacks[[1, "allOldCommNames"]], "Salvador,Soledad")
 })
 
 test_that("Repeated CesIDs with different data get split", {
@@ -145,7 +147,7 @@ test_that("GetCleanedTable doesn't fail", {
 })
 
 test_that("GetCleanedTable attached pt UUID", {
-  output <- Pt.GetCleanedTable()
+  output <- Pt.GetCleanedTable(useCache = FALSE)
   expect_true("ptUuid" %in% colnames(output))
   expect_true(length(output$ptUuid) == nrow(output))
   expect_true(typeof(output$ptUuid) == "character")
@@ -153,8 +155,8 @@ test_that("GetCleanedTable attached pt UUID", {
 })
 
 test_that("uuids are deterministic", {
-  output1 <- Pt.GetCleanedTable()
-  output2 <- Pt.GetCleanedTable()
+  output1 <- Pt.GetCleanedTable(useCache = FALSE)
+  output2 <- Pt.GetCleanedTable(useCache = FALSE)
   expect_equal(output1$ptUuid, output2$ptUuid)
 })
 
@@ -168,7 +170,7 @@ test_that("uuids are maintained over cache load", {
 })
 
 test_that("uuids are unique", {
-  output <- Pt.GetCleanedTable()
+  output <- Pt.GetCleanedTable(useCache = FALSE)
   expect_true(!any(duplicated(output$ptUuid)))
 })
 

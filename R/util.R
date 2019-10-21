@@ -40,7 +40,8 @@ Util._CommNamesFromCommunityPaths <- function(communityPaths) {
     {ifelse(. == "Laguna", "Laguna del Cofre", .)} %>%
     {ifelse(. == "ZCirugia", "Hospital", .)} %>%
     {ifelse(. == "ZHospiClinic", "Hospital", .)} %>%
-    {ifelse(. %in% c("Plan_Alta", "Plan_Baja"), "Plan de la Libertad", .)}
+    {ifelse(. == "Plan_Alta", "Plan Alta", .)} %>%
+    {ifelse(. == "Plan_Baja", "Plan Baja", .)}
 }
 
 Util.AppendClinicNames <- function(perCommunityTbl, communityPaths) {

@@ -207,16 +207,6 @@ Con._GenerateObsUuid <- function(consults) {
   return(result)
 }
 
-Con._Unfactorize <- function(consults) {
-  for (col in CON_COLS_LOGICAL) {
-    consults[col] %<>% sapply(as.logical)
-  }
-  for (col in CON_COLS_CHAR) {
-    consults[col] %<>% sapply(as.character)
-  }
-  return(consults)
-}
-
 #' PrepareOutputEncAndObs
 #'
 #' @param consults (tbl) Consults joined with Patients
@@ -362,8 +352,7 @@ Con.GetConsults <- function() {
     read_csv
   )
   consultsPerCommunity %<>% Util.AppendClinicNames(Util.CommunityPaths())
-  consultsFlat <- do.call(rbind, consultsPerCommunity)
-  consults <- Con._Unfactorize(consultsFlat)
+  consults <- do.call(rbind, consultsPerCommunity)
   return(consults)
 }
 

@@ -52,25 +52,32 @@ vprint <- function(content) {
 # Returns
 #   A vector of CES IDs.
 Pt.GetNewCesId <- function(patients, oldCesIds, oldCommNames) {
-  ids <- map2_chr(oldCesIds, oldCommNames,
-                    function(oldId, commName) {
-                      res <- patients[patients$oldCesId == oldId &
-                               patients$oldCommName == commName &
-                                 !is.na(patients$oldCesId), ][["CesID"]]
-                      if (length(res) == 0) {
-                        return(oldId)
-                      } else if (length(res) > 1) {
-                        print(paste("WARNING: Multiple patients with CesID", oldId, "at clinic", commName))
-                        return(res[1])
-                      } else {
-                        return(res)
-                      }
-                    }
-                  )
+  # Create a tibble for CesID lookup, where allOldCommNames has been split
+  # into separate rows for each community
+  ptIdMap <- dplyr::select(patients, CesID, oldCesId, allOldCommNames)
+  ptIdMap <- tidyr::separate_rows(ptIdMap, allOldCommNames, sep = ",")
+  ptIdMap <- dplyr::rename(ptIdMap, oldCommName = allOldCommNames)
+  ptIdMap <- dplyr::filter(ptIdMap, !is.na(oldCesId))
+  ids <- character(length(oldCesIds))  # pre-allocate result vector
+  pb = txtProgressBar(min = 0, max = length(oldCesIds), initial = 0, style = 3)
+  for (i in seq_along(oldCesIds)) {
+    setTxtProgressBar(pb, i)
+    oldId <- oldCesIds[[i]]
+    oldCommName <- oldCommNames[[i]]
+    res <- ptIdMap[ptIdMap$oldCesId == oldId &
+                   ptIdMap$oldCommName == oldCommName, ][["CesID"]]
+    if (length(res) == 0) {
+      ids[i] <- oldId
+    } else if (length(res) > 1) {
+      print(paste("WARNING: Multiple patients with CesID", oldId, "at clinic", oldCommName))
+      ids[i] <- res[1]
+    } else {
+      ids[i] <- res
+    }
+  }
+  close(pb)
   return(ids)
 }
-
-Pt.GetNewCesId(patients, "79", "Monterrey")
 
 # Data Prep Helpers ############################################################
 
@@ -219,6 +226,10 @@ Pt._CreateDistinctPatients <- function(patients,
 }
 
 #' ManualDedupe
+#' 
+#' Do this for CES IDs that have multiple patients that are definitely distinct
+#' people but for whatever reason are falsely detected as identical by
+#' Deduplicate
 #'
 #' @param patients (tbl) : the full patients table, flattened
 #'
@@ -260,7 +271,9 @@ Pt._ManualDedupe <- function(patients) {
 Pt._Deduplicate <- function(patients) {
   
   # do some manual fixes of a few edge cases
-  patients %<>% Pt._ManualDedupe
+  patients <- Pt._ManualDedupe(patients)
+  # add a column to remember all of the communities where the pt is found
+  patients <- dplyr::mutate(patients, allOldCommNames=oldCommName)
   # create column of info on which to dedupe
   patients <- dplyr::bind_cols(patients,
       idAndNames = paste(patients$CesID, patients$Nombre, patients$Apellido))
@@ -270,6 +283,7 @@ Pt._Deduplicate <- function(patients) {
   CollapseDupeGroup <- function(group) {
     intCols <- c("FN_Ano", "FN_Mes", "FN_Dia")
     res <- group[1, ]
+    res[["allOldCommNames"]] <- paste(group$oldCommName, collapse=",")
     # take non-NA entries from int cols
     for (col in intCols) {
       goodItem <- unique(group[[col]][which(!is.na(group[[col]]))])
@@ -376,7 +390,7 @@ Pt.CleanTable <- function(input) {
   patients %<>% Pt._Unfactorize()
   vprint("..Deduplicate")
   patients <- Pt._PrepPtsForCreateDistinct(patients)
-  patients %<>% Pt._Deduplicate()
+  patients <- Pt._Deduplicate(patients)
   vprint("..SplitDuplicatedCesIds")
   patients <- Pt._SplitDuplicatedCesIds(patients)
   vprint("..ParseAndFixBirthdates")
